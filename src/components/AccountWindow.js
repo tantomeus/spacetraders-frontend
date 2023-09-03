@@ -1,19 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useAccount } from "@/context/AccountContext";
+import { auth, signUp } from "@/services/api";
+import { useEffect, useState } from "react";
 
 export default function AccountWindow() {
-    const [currentTab, setCurrentTav] = useState("login");
+    const oldStorage = JSON.parse(localStorage.getItem("token")) ?? []
 
-    return <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col items-center">
-        <div>
-            <button className="p-4 uppercase">Switch</button>
-            <button className="p-4 uppercase">Login</button>
-            <button className="p-4 uppercase">Create</button>
+    const { account, setAccount } = useAccount();
+    const [local, setLocal] = useState(oldStorage);
+    const [currentTab, setCurrentTav] = useState("login");
+    const [username, setUsername] = useState("");
+    const [token, setToken] = useState("");
+
+    const switchAcc = currentTab === "switch";
+    const login = currentTab === "login";
+    const create = currentTab === "create";
+    const activeClass = "text-amber-600";
+    console.log(local)
+
+    async function handleSignUp(e) {
+        e.preventDefault();
+        const data = await signUp(username);
+
+        const acc = {token: data.data.token, name: data.data.agent.symbol};
+        setAccount(acc);
+
+        if (oldStorage?.find((item) => item.name === data.data.agent.symbol)) return;
+
+        await localStorage.setItem("token", JSON.stringify([acc, ...oldStorage]));
+        setLocal(JSON.parse(localStorage.getItem("token")));
+    }
+
+    async function handleAuth(e) {
+        e.preventDefault();
+        console.log(token);
+        const data = await auth(token);
+
+        const acc = {token, name: data.data.symbol};
+        setAccount(acc);
+
+        if (oldStorage?.find((item) => item.name === data.data.symbol)) return;
+
+        await localStorage.setItem("token", JSON.stringify([acc, ...oldStorage]));
+        setLocal(JSON.parse(localStorage.getItem("token")));
+    }
+
+    return <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col w-96">
+        <div className="flex">
+            <button onClick={() => setCurrentTav("switch")} className={`relative py-4 grow uppercase ${switchAcc ? activeClass : ""}`}>
+                Switch
+                {switchAcc &&  <span className="absolute left-0 bottom-0 bg-amber-600 h-0.5 w-full"></span>}
+            </button>
+            <button onClick={() => setCurrentTav("login")} className={`relative py-4 grow uppercase ${login ? activeClass : ""}`}>
+                Login
+                {login && <span className="absolute left-0 bottom-0 bg-amber-600 h-0.5 w-full"></span>}
+            </button>
+            <button onClick={() => setCurrentTav("create")} className={`relative py-4 grow uppercase ${create ? activeClass : ""}`}>
+                Create
+                {create && <span className="absolute left-0 bottom-0 bg-amber-600 h-0.5 w-full"></span>}
+            </button>
         </div>
-        <form className="flex flex-col">
-            <input/>
+
+        {switchAcc && <ul className="cursor-pointer">
+            {local.map((data) => <li className="p-5 hover:bg-stone-700" key={data.token} onClick={() => setAccount(data)}>{data.name}</li>)}
+        </ul>
+        }
+
+        {currentTab === "login" && <form value={token} onChange={(e) => setToken(e.target.value)}  onSubmit={handleAuth} className="flex flex-col gap-8 p-5">
+            <input placeholder="Token" className="bg-transparent border-stone-700 border rounded-md px-3 py-3"/>
             <button className="bg-amber-600 text-xl p-2">Set username</button>
-        </form>
+        </form>}
+
+        {currentTab === "create" && <form  onSubmit={handleSignUp} className="flex flex-col gap-8 p-5">
+            <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className="bg-transparent border-stone-700 border rounded-md px-3 py-3"/>
+            <button className="bg-amber-600 text-xl p-2">Set username</button>
+        </form>}
+
     </div>
 }
