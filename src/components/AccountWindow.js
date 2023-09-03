@@ -17,16 +17,15 @@ export default function AccountWindow() {
     const login = currentTab === "login";
     const create = currentTab === "create";
     const activeClass = "text-amber-600";
-    console.log(local)
 
     async function handleSignUp(e) {
         e.preventDefault();
         const data = await signUp(username);
 
-        const acc = {token: data.data.token, name: data.data.agent.symbol};
+        const acc = {token: data.token, name: data.agent.symbol};
         setAccount(acc);
 
-        if (oldStorage?.find((item) => item.name === data.data.agent.symbol)) return;
+        if (oldStorage?.find((item) => item.name === data.agent.symbol)) return;
 
         await localStorage.setItem("token", JSON.stringify([acc, ...oldStorage]));
         setLocal(JSON.parse(localStorage.getItem("token")));
@@ -34,13 +33,12 @@ export default function AccountWindow() {
 
     async function handleAuth(e) {
         e.preventDefault();
-        console.log(token);
         const data = await auth(token);
 
-        const acc = {token, name: data.data.symbol};
+        const acc = {token, name: data.symbol};
         setAccount(acc);
 
-        if (oldStorage?.find((item) => item.name === data.data.symbol)) return;
+        if (oldStorage?.find((item) => item.name === data.symbol)) return;
 
         await localStorage.setItem("token", JSON.stringify([acc, ...oldStorage]));
         setLocal(JSON.parse(localStorage.getItem("token")));
