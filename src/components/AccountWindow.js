@@ -1,7 +1,7 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { auth, signUp } from "@/services/api";
+import { getAgent, signUp } from "@/services/api";
 import { useEffect, useState } from "react";
 
 export default function AccountWindow() {
@@ -22,7 +22,7 @@ export default function AccountWindow() {
         e.preventDefault();
         const data = await signUp(username);
 
-        const acc = {token: data.token, name: data.agent.symbol};
+        const acc = {token: data.token, name: data.agent.symbol, credits: data.agent.credits};
         setAccount(acc);
 
         if (oldStorage?.find((item) => item.name === data.agent.symbol)) return;
@@ -33,9 +33,9 @@ export default function AccountWindow() {
 
     async function handleAuth(e) {
         e.preventDefault();
-        const data = await auth(token);
+        const data = await getAgent(token);
 
-        const acc = {token, name: data.symbol};
+        const acc = {token, name: data.symbol, credits: data.credits};
         setAccount(acc);
 
         if (oldStorage?.find((item) => item.name === data.symbol)) return;
