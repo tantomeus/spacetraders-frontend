@@ -99,3 +99,95 @@ export async function getShips(token) {
   console.log(data)
   return data;
 }
+
+
+// NAVIGATION
+
+
+export async function docking(token, ship) {
+  const options = {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+  };
+  
+  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/dock`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+
+export async function orbiting(token, ship) {
+  const options = {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+  };
+  
+  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/orbit`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+
+export async function switchFlightMode(token, ship, mode) {
+  const options = {
+    method: 'PATCH',
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      flightMode: mode,
+    }),
+  };
+  
+  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/nav`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+
+export async function flyToWaypoint(token, ship, waypoint) {
+  const options = {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      waypointSymbol: waypoint,
+    }),
+  };
+  
+  const res = fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/navigate`, options)
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+
+export async function warpOrJump(token, ship, system, type) {
+  const options = {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      waypointSymbol: system,
+    }),
+  };
+  
+  const res = fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/${type}`, options)
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
