@@ -15,7 +15,7 @@ export default function PlanetItem({ type, origin = "center" }) {
             data = {bg: "bg-[url('/assets/planets/gas-giant-0.png')]", animation: "animate-planet", scale: "scale(42%)", size: "100px", m: "-my-4 mx-auto"};
             break;
         case "ORBITAL_STATION":
-            data = {bg: "bg-[url('/assets/planets/continental-0.png')]", animation: "animate-planet", scale: "scale(42%)", size: "100px", m: "-my-4 mx-auto"};
+            data = {bg: "bg-[url('/assets/planets/dry-0.png')]", animation: "animate-planet", scale: "scale(42%)", size: "100px", m: "-my-4 mx-auto"};
             break;
         case "JUMP_GATE":
             data = {bg: "bg-[url('/assets/special/wormhole.png')]", animation: "", scale: "scale(50%)", size: "128px", m: "-my-7 mx-auto"};
