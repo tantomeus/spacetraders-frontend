@@ -58,7 +58,7 @@ export async function getWaypoints(token, system) {
   return data;
 }
 
-export async function getContracts(token, system) {
+export async function getContracts(token) {
   const options = {
     headers: {
       "Content-Type": "application/json",
@@ -74,6 +74,7 @@ export async function getContracts(token, system) {
 
 export async function acceptContract(token, id) {
   const options = {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`
