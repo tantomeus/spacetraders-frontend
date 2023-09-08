@@ -9,7 +9,7 @@ export default function SystemItem({ system }) {
                 <div className="w-24"><PlanetItem type={system.type} origin="left"/></div>
                 <h2 className="text-3xl">{system.symbol}</h2>
             </div>
-            <Link href={`systems/${system.symbol}`} className="bg-amber-600 text-xl p-2 rounded-md">View</Link>
+            <Link href={`/systems/${system.symbol}`} className="bg-amber-600 text-xl p-2 rounded-md">View</Link>
         </div>
         <Planets waypoints={system.waypoints}/>
     </li>
