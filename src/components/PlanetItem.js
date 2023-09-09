@@ -20,6 +20,9 @@ export default function PlanetItem({ type, origin = "center" }) {
         case "JUMP_GATE":
             data = {bg: "bg-[url('/assets/special/wormhole.png')]", animation: "", scale: "scale(50%)", size: "128px", m: "-my-7 mx-auto"};
             break;
+        case "BLACK_HOLE":
+            data = {bg: "bg-[url('/assets/nebulae/nebula-0.png')]", animation: "", scale: "scale(50%)", size: "128px", m: "-my-7 mx-auto"};
+            break;
         case "RED_STAR":
             data = {bg: "bg-[url('/assets/suns/sun-0.png')]", animation: "animate-sun", scale: "scale(42%)", size: "200px", m: ""};
             break;
@@ -33,6 +36,9 @@ export default function PlanetItem({ type, origin = "center" }) {
             data = {bg: "bg-[url('/assets/suns/sun-0.png')]", animation: "animate-sun", scale: "scale(42%)", size: "200px", m: ""};
             break;
         case "BLUE_STAR":
+            data = {bg: "bg-[url('/assets/suns/sun-0.png')]", animation: "animate-sun", scale: "scale(42%)", size: "200px", m: ""};
+            break;
+        case "NEUTRON_STAR":
             data = {bg: "bg-[url('/assets/suns/sun-0.png')]", animation: "animate-sun", scale: "scale(42%)", size: "200px", m: ""};
             break;
     }
