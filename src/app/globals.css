@@ -7,3 +7,8 @@
       @apply box-border;
     } 
 }
+
+@font-face {
+  font-family: "Speedy";
+  src: url("/assets/Speedy.ttf");
+}

@@ -32,6 +32,9 @@ module.exports = {
         "sun": "sunX 6s steps(60) infinite, sunY 24s steps(4) infinite"
       }
     },
+    fontFamily: {
+      'speedy': ['Speedy']
+    }
   },
   plugins: [],
 }
