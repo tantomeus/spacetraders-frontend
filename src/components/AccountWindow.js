@@ -44,7 +44,7 @@ export default function AccountWindow() {
         setLocal(JSON.parse(localStorage.getItem("token")));
     }
 
-    return <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col w-96">
+    return <div className="absolute z-50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col w-96">
         <div className="flex">
             <button onClick={() => setCurrentTav("switch")} className={`relative py-4 grow uppercase ${switchAcc ? activeClass : ""}`}>
                 Switch
@@ -67,12 +67,12 @@ export default function AccountWindow() {
 
         {currentTab === "login" && <form value={token} onChange={(e) => setToken(e.target.value)}  onSubmit={handleAuth} className="flex flex-col gap-8 p-5">
             <input placeholder="Token" className="bg-transparent border-stone-700 border rounded-md px-3 py-3"/>
-            <button className="bg-amber-600 text-xl p-2">Set username</button>
+            <button className="btn-color hover:btn-color-hover text-xl">Set username</button>
         </form>}
 
         {currentTab === "create" && <form  onSubmit={handleSignUp} className="flex flex-col gap-8 p-5">
             <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className="bg-transparent border-stone-700 border rounded-md px-3 py-3"/>
-            <button className="bg-amber-600 text-xl p-2">Set username</button>
+            <button className="btn-color hover:btn-color-hover text-xl">Set username</button>
         </form>}
 
     </div>
