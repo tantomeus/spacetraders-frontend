@@ -44,9 +44,9 @@ export default function Header() {
             </nav>
         </div>
         <div className="flex items-center space-x-4">
-            <span className="bg-stone-700 rounded-3xl p-2 text-xl">{account.credits || 0} credits</span>
+            <span className="bg-stone-700 rounded-3xl p-2 text-xl">{account.credits} credits</span>
             <div ref={ref} className="relative">
-                <button data-testid="account" onClick={handleOpenDropdown} className="bg-amber-600 text-xl p-2 rounded-md">{account.name || "heh"}</button>
+                <button data-testid="account" onClick={handleOpenDropdown} className="btn-color hover:btn-color-hover text-xl">{account.name || "heh"}</button>
 
                 {isDropDownOpen && <div className="z-50 rounded-lg absolute right-0 top-12 flex flex-col w-28 bg-stone-700 divide-y divide-stone-500 overflow-hidden">
                     <button onClick={handleOpenWindow} className="text-xs text-left p-3 hover:bg-stone-600">View account</button>
@@ -56,6 +56,9 @@ export default function Header() {
             </div>
         </div>
 
-        {!Object.keys(account).length && <AccountWindow />}
+        {!Object.keys(account).length && <>
+            <AccountWindow />
+            <div className="absolute bg-stone-950 inset-0"></div>
+        </>}
     </header>
 }
