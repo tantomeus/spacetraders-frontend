@@ -1,19 +1,19 @@
 "use client";
 
 import Planets from "@/components/Planets";
-import ShipyardItem from "@/components/ShipyardItem";
+import WaypointItem from "@/components/WaypointItem";
 import { useAccount } from "@/context/AccountContext";
 import { getShips, getWaypoints } from "@/services/api";
 import { useEffect, useState } from "react";
 
 export default function System({ params }) {
-  const { account } = useAccount();
+  const { account, rerender } = useAccount();
   const [system, setSystem] = useState([]);
   const [ships, setShips] = useState([]);
 
   const uniqueWaypoints = [...new Set(ships.map(ship => ship.nav.status === "IN_TRANSIT" ? "IN_TRANSIT" : ship.nav.waypointSymbol))];
   const collectionOfShips = uniqueWaypoints.map(waypoint => (waypoint === "IN_TRANSIT" ? 
-  {waypoint: {name: waypoint}, ships: ships.filter(ship => ship.nav.status === "IN_TRANSIT")} : 
+  {waypoint: {name: waypoint,}, ships: ships.filter(ship => ship.nav.status === "IN_TRANSIT")} : 
   {waypoint: {name: waypoint, type: system.find(planet => planet.symbol === waypoint)?.type}, ships: ships.filter(ship => ship.nav.waypointSymbol === waypoint && ship.nav.status !== "IN_TRANSIT")}));
 
   useEffect(() => {
@@ -24,8 +24,7 @@ export default function System({ params }) {
       setSystem(data);
     }
     fetching();
-    console.log(system);
-  }, [params.id, account.token]);
+  }, [params.id, account.token, account.credits, rerender]);
   
   return <section>
     <div>
@@ -35,7 +34,7 @@ export default function System({ params }) {
       <h2 className="text-6xl font-bold">{params.id}</h2>
     </div>
     <ul className="grid grid-cols-2 gap-6 mt-10">
-      {collectionOfShips.map(({waypoint, ships}) => <ShipyardItem system={system} params={params} ships={ships} waypoint={waypoint} key={waypoint.name}/>)}
+      {collectionOfShips.map(({waypoint, ships}) => <WaypointItem system={system} params={params} ships={ships} waypoint={waypoint} key={waypoint.name}/>)}
     </ul>
   </section>
 }
