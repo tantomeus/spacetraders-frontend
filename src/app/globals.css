@@ -5,7 +5,15 @@
 @layer base {
     * {
       @apply box-border;
-    } 
+    }
+
+    .btn-color {
+      @apply bg-amber-600 text-stone-50 rounded-md p-2;
+    }
+
+    .btn-color-hover {
+      @apply text-amber-600 bg-stone-50 rounded-md p-2;
+    }
 }
 
 @font-face {
