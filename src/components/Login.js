@@ -4,7 +4,7 @@ import { useAccount } from "@/context/AccountContext";
 import { getAgent, signUp } from "@/services/api";
 import { useEffect, useState } from "react";
 
-export default function AccountWindow() {
+export default function Login() {
     const oldStorage = JSON.parse(localStorage.getItem("token")) ?? []
 
     const { account, setAccount } = useAccount();
@@ -44,9 +44,9 @@ export default function AccountWindow() {
         setLocal(JSON.parse(localStorage.getItem("token")));
     }
 
-    return <div className="absolute z-50 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col w-96">
+    return <div className="fixed z-[1000] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col w-96">
         <div className="flex">
-            <button onClick={() => setCurrentTav("switch")} className={`relative py-4 grow uppercase ${switchAcc ? activeClass : ""}`}>
+            <button onClick={() => setCurrentTav("switch")} className={`relative py-4 grow uppercase ${switchAcc ? activeClass : ""} hover`}>
                 Switch
                 {switchAcc &&  <span className="absolute left-0 bottom-0 bg-amber-600 h-0.5 w-full"></span>}
             </button>
@@ -65,8 +65,8 @@ export default function AccountWindow() {
         </ul>
         }
 
-        {currentTab === "login" && <form value={token} onChange={(e) => setToken(e.target.value)}  onSubmit={handleAuth} className="flex flex-col gap-8 p-5">
-            <input placeholder="Token" className="bg-transparent border-stone-700 border rounded-md px-3 py-3"/>
+        {currentTab === "login" && <form onSubmit={handleAuth} className="flex flex-col gap-8 p-5">
+            <input value={token} onChange={(e) => setToken(e.target.value)} placeholder="Token" className="bg-transparent border-stone-700 border rounded-md px-3 py-3"/>
             <button className="btn-color hover:btn-color-hover text-xl">Set username</button>
         </form>}
 
