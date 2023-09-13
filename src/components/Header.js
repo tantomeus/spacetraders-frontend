@@ -3,21 +3,29 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import AccountWindow from "./AccountWindow";
+import Login from "./Login";
 import { useAccount } from "@/context/AccountContext";
+import AccountInfo from "./AccountInfo";
+import Overlay from "./Overlay";
 
 const pages = ["Ships", "Systems", "Market", "Contracts"]
 
 export default function Header() {
     const { account, setAccount } = useAccount();
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
+    const [isAccountInfoOpen, setIsAccountInfoOpen] = useState(false);
     const ref = useRef();
 
     function handleOpenDropdown() {
         setIsDropDownOpen((value) => !value);
     }
 
-    function handleOpenWindow() {
+    function handleOpenAccount() {
+        setIsDropDownOpen(false);
+        setIsAccountInfoOpen(true);
+    }
+
+    function handleOpenLogin() {
         setAccount({});
         console.log(!!Object.keys(account).length);
         setIsDropDownOpen(false);
@@ -49,15 +57,21 @@ export default function Header() {
                 <button data-testid="account" onClick={handleOpenDropdown} className="btn-color hover:btn-color-hover text-xl">{account.name || "heh"}</button>
 
                 {isDropDownOpen && <div className="z-50 rounded-lg absolute right-0 top-12 flex flex-col w-28 bg-stone-700 divide-y divide-stone-500 overflow-hidden">
-                    <button onClick={handleOpenWindow} className="text-xs text-left p-3 hover:bg-stone-600">View account</button>
-                    <button onClick={handleOpenWindow} className="text-xs text-left p-3 hover:bg-stone-600">Switch account</button>
+                    <button onClick={handleOpenAccount} className="text-xs text-left p-3 hover:bg-stone-600">View account</button>
+                    <button onClick={handleOpenLogin} className="text-xs text-left p-3 hover:bg-stone-600">Switch account</button>
                 </div>}
 
             </div>
         </div>
 
+        {isAccountInfoOpen && <>
+            <AccountInfo token={account.token}/>
+            <Overlay onClose={setIsAccountInfoOpen}/>
+        </>
+        }
+
         {!Object.keys(account).length && <>
-            <AccountWindow />
+            <Login />
             <div className="absolute bg-stone-950 inset-0"></div>
         </>}
     </header>
