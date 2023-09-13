@@ -1,12 +1,16 @@
-"use client";
+import { convertSeconds } from "@/helpers/helpers";
 
-import { useAccount } from "@/context/AccountContext";
-import { flyToWaypoint, switchFlightMode } from "@/services/api"
-import { useState } from "react";
+export default function FlightWindow({ ship, timer }) {
 
-export default function FlightWindow({ ship }) {
-
-    return <div className="z-[1000] divide-y divide-stone-500 absolute top-[5vh] left-1/2 transform -translate-x-1/2 bg-stone-900 w-[600px] pt-3">
-        
+    return <div className="fixed z-[1000] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col w-96 divide-y divide-stone-500">
+        <div className="flex p-4 justify-between items-center">
+            <h2 className="text-2xl">Arrives</h2>
+            <span>{convertSeconds(timer)}</span>
+        </div>
+        <div className="grid grid-cols-2 gap-4 p-4 text-sm">
+            <span>Fuel Consumed</span> <span className="justify-self-end text-stone-400">{ship.fuel.consumed.amount}</span>
+            <span>Destination</span> <span className="justify-self-end text-stone-400">{ship.nav.route.destination.symbol}</span>
+            <span>Mode</span> <span className="justify-self-end text-stone-400">{ship.nav.flightMode}</span>
+        </div>
     </div>
 }
