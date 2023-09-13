@@ -7,6 +7,7 @@ import TravelWindow from "./TravelWindow";
 import FlightWindow from "./FlightWindow";
 import { convertSeconds, shipImg } from "@/helpers/helpers";
 import Overlay from "./Overlay";
+import ShipImg from "./ShipImg";
 
 export default function ShipItem({ ship, system }) {
     const time = Math.trunc((new Date(ship.nav.route.arrival) - new Date()) / 1000);
@@ -18,18 +19,16 @@ export default function ShipItem({ ship, system }) {
     const { account, setRerender } = useAccount();
     const ref = useRef(null);
 
-    const orbitClasses = status === "DOCKED" ? "" : "scale-[2] -translate-y-2 drop-shadow-[0_5px_0_rgba(0,0,0,0.3)]";
-
     function handleOpenDropdown() {
         setIsDropDownOpen((value) => !value);
     }
 
-    function handleOpenWindowAndCloseDropDown() {
+    function handleOpenWindow() {
         setIsWindowOpen(true);
         setIsDropDownOpen(false);
     }
 
-    function shipNav() {
+    function handleDockOrOrbiting() {
         if (status === "DOCKED") {
             orbiting(account.token, ship.symbol);
             setStatus("IN_ORBIT");
@@ -72,10 +71,7 @@ export default function ShipItem({ ship, system }) {
     
     if (status === "IN_TRANSIT") return (
     <li className="flex items-center gap-6">
-        <div className={`cursor-pointer relative h-8 w-8 transition duration-300 ease-out ${orbitClasses}`}>
-            <div style={{backgroundPosition: "-416px 0px", imageRendering: "pixelated"}} className="bg-[url('/assets/ships.png')] h-8 w-8 absolute z-10"></div>
-            <div style={shipImg(ship.frame.symbol)} className="bg-[url('/assets/ships.png')] h-8 w-8 absolute"></div>
-        </div>
+        <ShipImg status={status} ship={ship}/>
         <div className="space-y-4">
             <h3 className="font-medium">{ship.symbol}</h3>
             {!ship.cargo.inventory.length ? <span className="inline-block text-xs bg-stone-500 px-2 py-1 rounded-full">No cargo</span> : ship.cargo.inventory.map((item, i) => <span key={i}>{item.name}</span>)}
@@ -89,10 +85,7 @@ export default function ShipItem({ ship, system }) {
     </li>)
 
     return <li className="flex items-center gap-6">
-        <div onClick={shipNav} className={`cursor-pointer relative h-8 w-8 transition duration-300 ease-out ${orbitClasses}`}>
-            <div style={{backgroundPosition: "-416px 0px", imageRendering: "pixelated"}} className="bg-[url('/assets/ships.png')] h-8 w-8 absolute z-10"></div>
-            <div style={shipImg(ship.frame.symbol)} className="bg-[url('/assets/ships.png')] h-8 w-8 absolute"></div>
-        </div>
+        <ShipImg onClick={handleDockOrOrbiting} status={status} ship={ship}/>
         <div className="space-y-4">
             <h3 className="font-medium">{ship.symbol}</h3>
             {!ship.cargo.inventory.length ? <span className="inline-block text-xs bg-stone-500 px-2 py-1 rounded-full">No cargo</span> : ship.cargo.inventory.map((item, i) => <span key={i}>{item.name}</span>)}
@@ -101,7 +94,7 @@ export default function ShipItem({ ship, system }) {
             <button onClick={handleOpenDropdown} className="btn-color hover:btn-color-hover text-xs/[1rem]">COMMAND</button>
 
             {isDropDownOpen && <div className="z-50 rounded-lg absolute right-0 top-10 flex flex-col w-28 bg-stone-700 divide-y divide-stone-500 overflow-hidden">
-                <button onClick={handleOpenWindowAndCloseDropDown} className="text-xs text-left p-3 hover:bg-stone-600">Travel</button>
+                <button onClick={handleOpenWindow} className="text-xs text-left p-3 hover:bg-stone-600">Travel</button>
                 <button className="text-xs text-left p-3 hover:bg-stone-600">Buy</button>
                 <button className="text-xs text-left p-3 hover:bg-stone-600">Sell</button>
             </div>}
