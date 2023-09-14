@@ -105,7 +105,7 @@ export async function getShips(token) {
 // NAVIGATION
 
 
-export async function docking(token, ship) {
+export async function dockOrOrbit(token, ship, type) {
   const options = {
     method: "POST",
     headers: {
@@ -114,28 +114,11 @@ export async function docking(token, ship) {
     },
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/dock`, options);
+  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/${type}`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
 }
-
-
-export async function orbiting(token, ship) {
-  const options = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
-  };
-  
-  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/orbit`, options);
-  const { data } = await res.json();
-  console.log(data)
-  return data;
-}
-
 
 export async function switchFlightMode(token, ship, mode) {
   const options = {
@@ -194,7 +177,61 @@ export async function warpOrJump(token, ship, system, type) {
 }
 
 
-// SHIPS
+// OTHER
+
+
+export async function mineAsteroid(token, ship) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
+  };
+  
+  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/extract`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+
+// TRADE
+
+
+export async function trade(token, ship, resource, quantity, type) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      symbol: resource,
+      units: quantity,
+    }),
+  };
+  
+  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/${type}`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+
+export async function viewMarketplace(token, system, waypoint) {
+  const options = {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+  };
+  
+  const res = await fetch(`https://api.spacetraders.io/v2/systems/${system}/waypoints/${waypoint}/market`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
 
 
 export async function getShipMarket(token, system, waypoint) {
@@ -210,6 +247,7 @@ export async function getShipMarket(token, system, waypoint) {
   console.log(data)
   return data;
 }
+
 
 export async function purchaseShip(token, type, waypoint) {
   const options = {
@@ -229,4 +267,3 @@ export async function purchaseShip(token, type, waypoint) {
   console.log(data)
   return data;
 }
-
