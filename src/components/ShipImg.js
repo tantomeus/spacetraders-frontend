@@ -1,6 +1,6 @@
 export default function ShipImg({ status, ship, onClick }) {
 
-    const orbitClasses = status === "IN_ORBIT" 
+    const orbitClasses = status === "IN_ORBIT" || status === "IN_TRANSIT" 
     ? "scale-[2] -translate-y-2 drop-shadow-[0_5px_0_rgba(0,0,0,0.3)]" 
     : "";
 
