@@ -1,13 +1,14 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { docking, orbiting } from "@/services/api";
+import { dockOrOrbit, mineAsteroid } from "@/services/api";
 import { useEffect, useRef, useState } from "react";
 import TravelWindow from "./TravelWindow";
 import FlightWindow from "./FlightWindow";
 import { convertSeconds, shipImg } from "@/helpers/helpers";
 import Overlay from "./Overlay";
 import ShipImg from "./ShipImg";
+import Inventory from "./Inventory";
 
 export default function ShipItem({ ship, system }) {
     const time = Math.trunc((new Date(ship.nav.route.arrival) - new Date()) / 1000);
@@ -15,7 +16,7 @@ export default function ShipItem({ ship, system }) {
 
     const [status, setStatus] = useState(ship.nav.status);
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
-    const [isWindowOpen, setIsWindowOpen] = useState(false);
+    const [openedWindow, setOpenedWindow] = useState(false); // travel, flightInfo, inventory
     const { account, setRerender } = useAccount();
     const ref = useRef(null);
 
@@ -23,19 +24,24 @@ export default function ShipItem({ ship, system }) {
         setIsDropDownOpen((value) => !value);
     }
 
-    function handleOpenWindow() {
-        setIsWindowOpen(true);
+    function handleOpenWindow(name) {
+        setOpenedWindow(name);
         setIsDropDownOpen(false);
     }
 
-    function handleDockOrOrbiting() {
+    function handleDockOrOrbit() {
         if (status === "DOCKED") {
-            orbiting(account.token, ship.symbol);
+            dockOrOrbit(account.token, ship.symbol, "orbit")
             setStatus("IN_ORBIT");
         } else {
-            docking(account.token, ship.symbol);
+            dockOrOrbit(account.token, ship.symbol, "dock");
             setStatus("DOCKED");
         }
+    }
+
+    function handleMineAsteroid() {
+        mineAsteroid(account.token, ship.symbol);
+        setIsDropDownOpen(false);
     }
 
     useEffect(() => {
@@ -59,7 +65,7 @@ export default function ShipItem({ ship, system }) {
                 clearInterval(interval);
             }
         }
-    }, [time, status, isWindowOpen]);
+    }, [time, status, openedWindow]);
 
     useEffect(() => {
         if (status === "IN_TRANSIT") {
@@ -70,39 +76,49 @@ export default function ShipItem({ ship, system }) {
     }, []);
     
     if (status === "IN_TRANSIT") return (
-    <li className="flex items-center gap-6">
+    <li className="flex items-center gap-6 hover:bg-stone-800 p-4">
         <ShipImg status={status} ship={ship}/>
         <div className="space-y-4">
             <h3 className="font-medium">{ship.symbol}</h3>
-            {!ship.cargo.inventory.length ? <span className="inline-block text-xs bg-stone-500 px-2 py-1 rounded-full">No cargo</span> : ship.cargo.inventory.map((item, i) => <span key={i}>{item.name}</span>)}
+            <button onClick={() => handleOpenWindow("inventory")} className="text-xs bg-stone-600 px-2 py-1 rounded-full uppercase hover:bg-stone-500">inventory</button>
         </div>
-        <button onClick={() => setIsWindowOpen(true)} className="ml-auto btn-color hover:btn-color-hover text-xs/[1rem]">VIEW FLIGHT</button>
+        <button onClick={() => handleOpenWindow("flightInfo")} className="ml-auto btn-color hover:btn-color-hover text-xs/[1rem]">VIEW FLIGHT</button>
 
-        {isWindowOpen && <>
+        {openedWindow === "flightInfo" && <>
             <FlightWindow ship={ship} timer={timer}/>
-            <Overlay onClose={setIsWindowOpen}/>
+            <Overlay onClose={setOpenedWindow}/>
+        </>}
+
+        {openedWindow === "inventory" && <>
+            <Inventory ship={ship}/>
+            <Overlay onClose={setOpenedWindow}/>
         </>}
     </li>)
 
-    return <li className="flex items-center gap-6">
-        <ShipImg onClick={handleDockOrOrbiting} status={status} ship={ship}/>
+    return <li className="flex items-center gap-6 hover:bg-stone-800 p-4">
+        <ShipImg onClick={handleDockOrOrbit} status={status} ship={ship}/>
         <div className="space-y-4">
             <h3 className="font-medium">{ship.symbol}</h3>
-            {!ship.cargo.inventory.length ? <span className="inline-block text-xs bg-stone-500 px-2 py-1 rounded-full">No cargo</span> : ship.cargo.inventory.map((item, i) => <span key={i}>{item.name}</span>)}
+            <button onClick={() => handleOpenWindow("inventory")} className="text-xs bg-stone-600 px-2 py-1 rounded-full uppercase hover:bg-stone-500">inventory</button>
         </div>
         <div ref={ref} className="relative ml-auto">
             <button onClick={handleOpenDropdown} className="btn-color hover:btn-color-hover text-xs/[1rem]">COMMAND</button>
 
             {isDropDownOpen && <div className="z-50 rounded-lg absolute right-0 top-10 flex flex-col w-28 bg-stone-700 divide-y divide-stone-500 overflow-hidden">
-                <button onClick={handleOpenWindow} className="text-xs text-left p-3 hover:bg-stone-600">Travel</button>
-                <button className="text-xs text-left p-3 hover:bg-stone-600">Buy</button>
-                <button className="text-xs text-left p-3 hover:bg-stone-600">Sell</button>
+                <button onClick={() => handleOpenWindow("travel")} className="text-xs text-left p-3 hover:bg-stone-600">Travel</button>
+                <button onClick={handleMineAsteroid} className="text-xs text-left p-3 hover:bg-stone-600">Mine</button>
+                <button className="text-xs text-left p-3 hover:bg-stone-600">Refuel</button>
             </div>}
         </div>
         
-        {isWindowOpen && <>
-            <TravelWindow onNavigation={setIsWindowOpen} ship={ship} departureSymbol={ship.nav.waypointSymbol} waypoints={system}/>
-            <Overlay onClose={setIsWindowOpen}/>
+        {openedWindow === "travel" && <>
+            <TravelWindow onNavigation={setOpenedWindow} ship={ship} departureSymbol={ship.nav.waypointSymbol} waypoints={system}/>
+            <Overlay onClose={setOpenedWindow}/>
+        </>}
+
+        {openedWindow === "inventory" && <>
+            <Inventory ship={ship}/>
+            <Overlay onClose={setOpenedWindow}/>
         </>}
     </li>
 }
