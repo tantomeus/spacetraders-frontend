@@ -9,19 +9,9 @@ export function convertSeconds(time) {
     return `${hours} : ${minutes} : ${seconds}`;
 }
 
-export function shipImg(type) {
-    switch(type) {
-        case "FRAME_PROBE":
-            return {display: "none"};
-        case "FRAME_MINER":
-            return {backgroundPosition: "-352px -65px", top: "-0.1rem", imageRendering: "pixelated"};
-        case "FRAME_LIGHT_FREIGHTER":
-            return {backgroundPosition: "-320px -96px", top: "0.1rem", imageRendering: "pixelated"};
-        case "FRAME_FRIGATE":
-            return {backgroundPosition: "-320px -96px", top: "0.1rem", imageRendering: "pixelated"};
-        case "FRAME_HEAVY_FREIGHTER":
-            return {backgroundPosition: "-288px -96px", top: "0.1rem", imageRendering: "pixelated"};
-        case "FRAME_DRONE":
-            return {backgroundPosition: "-224px -96px", top: "0rem", imageRendering: "pixelated"};
-    }
+export function shorten(number) {
+    if (!number && number !== 0) return;
+    if (number < 1000) return number.toFixed(2).replace(".00", "");
+
+    return shorten(number / 1000) + "k";
 }
