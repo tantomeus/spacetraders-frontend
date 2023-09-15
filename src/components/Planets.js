@@ -1,7 +1,7 @@
 import PlanetItem from "./PlanetItem";
 
 export default function Planets({ waypoints = [] }) {
-    return <ul className="flex justify-around flex-wrap px-5 pb-5 text-center">
+    return <ul className="flex gap-4 justify-around flex-wrap px-5 pb-5 text-center">
         {waypoints.map((point) => {
 
             const hasShipyard = point.traits?.find(item => item.symbol === "SHIPYARD");
