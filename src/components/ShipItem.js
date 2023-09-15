@@ -2,6 +2,7 @@
 
 import { useAccount } from "@/context/AccountContext";
 import { dockOrOrbit, mineAsteroid } from "@/services/api";
+import { FaHelicopterSymbol } from "react-icons/fa6"
 import { useEffect, useRef, useState } from "react";
 import TravelWindow from "./TravelWindow";
 import FlightWindow from "./FlightWindow";
@@ -96,7 +97,10 @@ export default function ShipItem({ ship, system }) {
     </li>)
 
     return <li className="flex items-center gap-6 hover:bg-stone-800 p-4">
-        <ShipImg onClick={handleDockOrOrbit} status={status} ship={ship}/>
+        <div className="relative flex justify-center items-center h-20 w-20">
+            <FaHelicopterSymbol className="absolute p-2 rounded-full h-full w-full bg-stone-400 fill-amber-600"/>
+            <ShipImg onClick={handleDockOrOrbit} status={status} ship={ship}/>
+        </div>
         <div className="space-y-4">
             <h3 className="font-medium">{ship.symbol}</h3>
             <button onClick={() => handleOpenWindow("inventory")} className="text-xs bg-stone-600 px-2 py-1 rounded-full uppercase hover:bg-stone-500">inventory</button>
