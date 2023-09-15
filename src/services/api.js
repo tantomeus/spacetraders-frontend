@@ -1,4 +1,4 @@
-export async function signUp(callsign) {
+export async function signUp(callsign, faction) {
     const options = {
         method: "POST",
         headers: {
@@ -6,7 +6,7 @@ export async function signUp(callsign) {
         },
         body: JSON.stringify({
           symbol: callsign,
-          faction: "COSMIC",
+          faction: faction,
         }),
       };
 
@@ -30,7 +30,21 @@ export async function getAgent(token) {
   return data;
 }
 
-export async function getSystems(token) {
+export async function getFactions(token) {
+  const options = {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+  };
+    
+  const res = await fetch("https://api.spacetraders.io/v2/factions", options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+export async function getSystems(token, page = 1) {
   const options = {
     headers: {
       "Content-Type": "application/json",
@@ -38,8 +52,8 @@ export async function getSystems(token) {
     },
   };
   
-  const res = await fetch("https://api.spacetraders.io/v2/systems", options);
-  const { data } = await res.json();
+  const res = await fetch(`https://api.spacetraders.io/v2/systems?limit=20&page=${page}`, options);
+  const data = await res.json();
   console.log(data)
   return data;
 }
