@@ -8,11 +8,11 @@
     }
 
     .btn-color {
-      @apply bg-amber-600 text-stone-50 rounded-md p-2;
+      @apply bg-amber-600 text-stone-50 rounded-md p-2 uppercase;
     }
 
     .btn-color-hover {
-      @apply text-amber-600 bg-stone-50 rounded-md p-2;
+      @apply text-amber-600 bg-stone-50 rounded-md p-2 uppercase;
     }
 }
 
