@@ -1,12 +1,15 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { flyToWaypoint, switchFlightMode } from "@/services/api"
+import { flyToWaypoint, switchFlightMode, warpOrJump } from "@/services/api"
 import { useState } from "react";
 
 export default function TravelWindow({ waypoints, departureSymbol, ship, onNavigation }) {
     const { account, setRerender } = useAccount();
     const [flightMode, setFlightMode] = useState(ship.nav.flightMode);
+    const [controlledWaypoint, setControlledWaypoint] = useState("");
+
+    const speed = 0.04857 * ship.engine.speed;
 
     function flightModeFactor(flightMode) {
         if (flightMode === "BURN") return {fuel: 2, speed: 0.5}
@@ -14,16 +17,16 @@ export default function TravelWindow({ waypoints, departureSymbol, ship, onNavig
         if (flightMode === "STEALTH") return {fuel: 2, speed: 2}
         return {fuel: 1, speed: 1}
     }
-    
-    const speed = 0.04857 * ship.engine.speed ;
 
     function handleFlightMode(token, ship, mode) {
         switchFlightMode(token, ship, mode);
         setFlightMode(mode);
     }
 
-    function handleOnClick(token, ship, destination) {
-        flyToWaypoint(token, ship, destination);
+    function handleTravel(token, ship, destination, type) {
+        if (type) warpOrJump(token, ship, destination, type);
+        else flyToWaypoint(token, ship, destination);
+
         onNavigation(false);
         setRerender((rerender) => !rerender);
     }
@@ -51,6 +54,16 @@ export default function TravelWindow({ waypoints, departureSymbol, ship, onNavig
             </div>
         </div>
 
+        <form onSubmit={(e) => {
+            e.preventDefault();
+            handleTravel(account.token, ship.symbol, controlledWaypoint, "warp");
+        }}>
+            <label>
+                <span>Find a system: </span>
+                <input onChange={(e) => setControlledWaypoint(e.target.value)} value={controlledWaypoint} className="bg-transparent border-stone-700 border rounded-md px-3 w-28 text-center"/>
+            </label>
+        </form>
+
         <ul className="overflow-auto max-h-[70vh] pt-4 text-xs">
         {waypoints.map((planet, i, arr) => {
 
@@ -71,7 +84,7 @@ export default function TravelWindow({ waypoints, departureSymbol, ship, onNavig
                 {!check && <span>~{fuelSpending} Fuel</span>}
             </div>
             <span></span>
-            <button onClick={() => handleOnClick(account.token, ship.symbol, planet.symbol, displayed)} disabled={check} className={`btn-color ${check?"bg-stone-600":"hover:btn-color-hover"} text-xs/[1rem]`}>SELECT</button>
+            <button onClick={() => handleTravel(account.token, ship.symbol, planet.symbol)} disabled={check} className={`btn-color ${check?"bg-stone-600":"hover:btn-color-hover"} text-xs/[1rem]`}>SELECT</button>
         </li>})}
         </ul>
     </div>
