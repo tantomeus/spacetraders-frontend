@@ -52,7 +52,7 @@ export async function getSystems(token, page = 1) {
     },
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/systems?limit=20&page=${page}`, options);
+  const res = await fetch(`https://api.spacetraders.io/v2/systems?page=${page}`, options);
   const data = await res.json();
   console.log(data)
   return data;
@@ -66,7 +66,7 @@ export async function getWaypoints(token, system) {
     },
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/systems/${system}/waypoints`, options);
+  const res = await fetch(`https://api.spacetraders.io/v2/systems/${system}/waypoints?limit=20`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -172,7 +172,7 @@ export async function flyToWaypoint(token, ship, destination) {
 }
 
 
-export async function warpOrJump(token, ship, system, type) {
+export async function warpOrJump(token, ship, waypoint, type) {
   const options = {
     method: "POST",
     headers: {
@@ -180,7 +180,7 @@ export async function warpOrJump(token, ship, system, type) {
       "Authorization": `Bearer ${token}`
     },
     body: JSON.stringify({
-      waypointSymbol: system,
+      waypointSymbol: waypoint,
     }),
   };
   
