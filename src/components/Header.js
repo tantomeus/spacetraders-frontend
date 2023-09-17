@@ -8,6 +8,7 @@ import { useAccount } from "@/context/AccountContext";
 import AccountInfo from "./AccountInfo";
 import Overlay from "./Overlay";
 import { shorten } from "@/helpers/helpers";
+import { createPortal } from "react-dom";
 
 const pages = ["Ships", "Systems", "Contracts", "Guide"];
 
@@ -53,7 +54,7 @@ export default function Header() {
             </nav>
         </div>
         <div className="flex items-center space-x-4">
-            <span className="text-stone-700 bg-amber-400 rounded-3xl py-2 px-4 text-xl">{shorten(account.credits)} credits</span>
+            <span className="credits rounded-3xl py-2 px-4 text-xl">{shorten(account.credits)} credits</span>
             <div ref={ref} className="relative">
                 <button data-testid="account" onClick={handleOpenDropdown} className="btn-color hover:btn-color-hover text-xl">{account.name || "heh"}</button>
 
@@ -65,15 +66,15 @@ export default function Header() {
             </div>
         </div>
 
-        {openedWindow === "accountInfo" && <>
+        {openedWindow === "accountInfo" && createPortal(<>
             <AccountInfo token={account.token}/>
             <Overlay onClose={setOpenedWindow}/>
-        </>
+        </>, document.body)
         }
 
-        {(!Object.keys(account).length || openedWindow === "login") && <>
+        {(!Object.keys(account).length || openedWindow === "login") && createPortal(<>
             <Login onClose={setOpenedWindow}/>
             <div className="z-[500] absolute bg-stone-950 inset-0"></div>
-        </>}
+        </>,document.body)}
     </header>
 }
