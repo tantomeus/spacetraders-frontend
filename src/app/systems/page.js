@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const TOTAL = 12000;
-const PER_PAGE = 50;
+const PER_PAGE = 60;
 const MAX_PAGES = TOTAL / PER_PAGE;
 
 export default function Systems() {
@@ -21,7 +21,7 @@ export default function Systems() {
   useEffect(() => {
     async function fetching(page) {
       const arr = [];
-      for (let i = (page - 1) * 5 + 1; i <= page * 5; i++) {
+      for (let i = (page - 1) * (PER_PAGE / 20) + 1; i <= page * (PER_PAGE / 20); i++) {
         const {data} = await getSystems(account.token, i);
         arr.push(data);
       }
