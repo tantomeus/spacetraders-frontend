@@ -14,6 +14,22 @@
     .btn-color-hover {
       @apply text-amber-600 bg-stone-50 rounded-md p-2 uppercase;
     }
+
+    .credits {
+      @apply text-stone-700 bg-amber-400;
+    }
+
+    .window {
+      @apply fixed z-[1000] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col rounded-md;
+    }
+
+    .window-divide {
+      @apply divide-y divide-stone-500;
+    }
+
+    .input {
+      @apply bg-transparent border-stone-700 border rounded-md px-3;
+    }
 }
 
 @font-face {
