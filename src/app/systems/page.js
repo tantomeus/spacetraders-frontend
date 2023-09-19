@@ -1,6 +1,7 @@
 "use client";
 
 import SystemItem from "@/components/SystemItem";
+import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 import { useAccount } from "@/context/AccountContext";
 import { getSystems } from "@/services/api";
 import { useRouter } from "next/navigation";
@@ -14,9 +15,9 @@ export default function Systems() {
   const [systems, setSystems] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [controlledSystem, setControlledSystem] = useState("");
-  const [controlledPage, setControlledPage] = useState(1);
-  const router = useRouter();
+  const [controlledPage, setControlledPage] = useState(0);
   const { account } = useAccount();
+  const router = useRouter();
 
   useEffect(() => {
     async function fetching(page) {
@@ -38,12 +39,13 @@ export default function Systems() {
         <span>total systems: {TOTAL}</span>
         <form onSubmit={(e) => {
           e.preventDefault();
+          if (controlledPage <= 0) return;
           setCurrentPage(controlledPage);
         }}>
           <label>
             <span>Go to: </span>
             <input value={controlledPage} onChange={(e) => {
-              if (e.target.value <= 1) return setControlledPage(1);
+              if (e.target.value <= 0) return setControlledPage(0);
               if (e.target.value >= MAX_PAGES) return setControlledPage(MAX_PAGES);
               if (!isNaN(+e.target.value)) setControlledPage(+e.target.value);
             }} className="bg-transparent border-stone-700 border rounded-md px-3 w-16 text-center"/>
@@ -63,5 +65,13 @@ export default function Systems() {
     <ul className="space-y-5">
       {systems?.map((data) => <SystemItem key={data.symbol} system={data}/>)}
     </ul>
+    {!!systems.length && <div className="flex justify-between items-center mt-12">
+      {currentPage > 1 ? <button onClick={() => setCurrentPage(page => page > 1 ? page - 1 : page)}>
+        <AiOutlineLeft className="h-12 w-12 hover:fill-amber-600"/>
+      </button> : <span></span>}
+      {currentPage < MAX_PAGES ? <button onClick={() => setCurrentPage(page => page < MAX_PAGES ? page + 1 : page)}>
+        <AiOutlineRight className="h-12 w-12 hover:fill-amber-600"/>
+      </button> : <span></span>}
+    </div>}
   </section>
 }
