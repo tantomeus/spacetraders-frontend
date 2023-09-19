@@ -18,9 +18,7 @@ export default function Ships() {
         ships: ships.filter(ship => ship.nav.systemSymbol === system)
     }));
 
-    const transit = {
-        ships: ships.filter(ship => ship.nav.status === "IN_TRANSIT")
-    }
+    const transit = ships.filter(ship => ship.nav.status === "IN_TRANSIT");
 
     useEffect(() => {
         async function fetching() {
@@ -32,6 +30,17 @@ export default function Ships() {
 
     return <section>
         <ul className="space-y-5">
+            {!!transit?.length && <li className="bg-stone-900 rounded-md">
+                <div className="p-4">
+                    <div className="min-h-[4.28rem] flex justify-between items-center">
+                        <h2 className="text-2xl font-bold uppercase">Transit</h2>
+                    </div>
+                </div>
+                <hr/>
+                <ul className="space-y-4">
+                {transit.map(ship => <ShipItem key={ship.symbol} ship={ship}/>)}
+                </ul>
+            </li>}
             {collectionOfShips.map(({system, ships}) => {
                 return <li key={system} className="bg-stone-900 rounded-md">
                 <div className="p-4">
@@ -42,7 +51,7 @@ export default function Ships() {
                 </div>
                 <hr/>
                 <ul className="space-y-4">
-                {ships.map(ship => <ShipItem key={ship.symbol} system={ship.system} ship={ship}/>)}
+                {ships.map(ship => <ShipItem key={ship.symbol} system={[]} ship={ship}/>)}
                 </ul>
             </li>
             })}
