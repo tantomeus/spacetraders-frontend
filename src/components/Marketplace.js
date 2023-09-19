@@ -5,28 +5,25 @@ import { trade, viewMarketplace } from "@/services/api";
 import { useEffect, useState } from "react";
 import MarketplaceItem from "./MarketplaceItem";
 import ShipImg from "./ShipImg";
+import { shorten } from "@/helpers/helpers";
+import { useShips } from "@/context/ShipsContext";
 
 export default function Marketplace({ system, waypoint, ships }) {
-    const { account, updateCredits, rerender, setRerender } = useAccount();
+    const { account, setAccount } = useAccount();
+    const { setShips } = useShips();
     const [goods, setGoods] = useState({});
     const [status, setStatus] = useState(""); // purchase, sell
     const [selectedShip, setSelectedShip] = useState(null);
     const [selectedGoods, setSelectedGoods] = useState(null);
     const [amount, setAmount] = useState(0);
 
-    console.log(selectedShip);
+    const availableShips = ships.filter(ship => ship.cargo.capacity && ship.nav.status === "DOCKED")
 
-    const statusFactor = status === "sell" ? 1 : -1;
-
-    function handleTrade(credits) {
-        trade(account.token, selectedShip.symbol, selectedGoods.symbol, amount, status);
-        updateCredits(credits);
-        setRerender((rer) => !rer);
-        setSelectedShip((ship) => ({...ship, cargo: {
-            ...ship.cargo,
-            inventory: ship.cargo.inventory.map(item => item.units - amount ? ({...item, units: item.units - amount * statusFactor}) : "").filter((item => item !== "")),
-            units: ship.cargo.units - amount * statusFactor
-        }}));
+    async function handleTrade(credits) {
+        const data = await trade(account.token, selectedShip.symbol, selectedGoods.symbol, amount, status);
+        setAccount((account) => ({...account, credits: data.agent.credits}));
+        setSelectedShip((ship) => ({...ship, cargo: data.cargo}));
+        setShips((ships) => ships.map((ship) => ship.symbol === selectedShip.symbol ? selectedShip : ship));
         setSelectedGoods(() => null);
         setAmount(0);
     }
@@ -42,10 +39,10 @@ export default function Marketplace({ system, waypoint, ships }) {
             setGoods(data);
         }
         fetching();
-    }, [account.token, system, waypoint, rerender]);
-
+    }, [account.token, system, waypoint]);
+    
     if (selectedGoods) return (
-        <div className="fixed z-[1000] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col w-[30rem] divide-y divide-stone-500">
+        <div className="window window-divide w-[30rem]">
             <div className="flex justify-between items-center px-6 py-4 text-2xl">
                 <h2>Marketplace</h2>
                 <span>{selectedShip?.symbol}</span>
@@ -71,20 +68,21 @@ export default function Marketplace({ system, waypoint, ships }) {
 
             <div className="flex justify-between px-4 py-4">
                 <button onClick={() => setSelectedGoods(null)}>&larr; BACK</button>
-                <button onClick={() => handleTrade(amount * selectedGoods.price * statusFactor)} className="btn-color hover:btn-color-hover">{status} FOR {amount * selectedGoods.price} CREDITS</button>
+                <button onClick={handleTrade} className="btn-color hover:btn-color-hover">{status} FOR {amount * selectedGoods.price} CREDITS</button>
             </div>
         </div>
     );
 
-    return <div className="fixed z-[1000] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col w-[60rem] divide-y divide-stone-500">
+    return <div className="window window-divide w-[60rem]">
         <div className="flex justify-between items-center px-6 py-4 text-2xl">
             <h2>Marketplace</h2>
-            <span>{selectedShip?.symbol}</span>
+            <span className="credits rounded-3xl py-2 px-4 text-xl">{shorten(account.credits)} credits</span>
+            {selectedShip?.symbol}
         </div>
 
-        <ul className="overflow-auto max-h-[70vh] p-4 text-xs grid grid-cols-2 gap-4">
+        {availableShips.length ? <ul className="overflow-auto max-h-[70vh] p-4 text-xs grid grid-cols-2 gap-4">
 
-            {!selectedShip && ships.map(ship => ship.cargo.capacity ? <li key={ship.symbol} className="flex items-center gap-6 p-4 border-solid border border-stone-500 rounded-md">
+            {!selectedShip && availableShips.map(ship => ship.cargo.capacity ? <li key={ship.symbol} className="flex items-center gap-6 p-4 border-solid border border-stone-500 rounded-md">
                 <ShipImg ship={ship}/>
                 <h3 className="font-medium">{ship.symbol}</h3>
                 <div className="relative ml-auto">
@@ -93,10 +91,10 @@ export default function Marketplace({ system, waypoint, ships }) {
             </li> : "")}
 
             {selectedShip && goods.tradeGoods?.map((item) => <MarketplaceItem onSelect={handleSelect} ship={selectedShip} item={item} key={item.symbol}/>)}
-        </ul>
+        </ul> : <p className="uppercase py-8 text-center text-xl">There are no docked ships with a cargo module</p>}
 
         {selectedShip && <div className="px-6 py-4">
-            <button onClick={() => setSelectedShip({})}>&larr; BACK</button>
+            <button onClick={() => setSelectedShip(null)}>&larr; BACK</button>
         </div>}
     </div>
 }
