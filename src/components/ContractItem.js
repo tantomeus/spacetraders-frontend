@@ -1,10 +1,12 @@
 "use client";
 
+import { useAccount } from "@/context/AccountContext";
 import { acceptContract } from "@/services/api";
 import { useState } from "react";
 
 export default function ContractItem({ contract, token }) {
     const [isAccepted, setIsAccepted] = useState(false);
+    const { setAccount } = useAccount();
 
     function formatDate(date) {
         const formated =  date.split("T")[0].split("-");
@@ -13,6 +15,7 @@ export default function ContractItem({ contract, token }) {
 
     async function handleAccept(token, contract) {
         const data = await acceptContract(token, contract);
+        setAccount((account) => ({...account, credits: data.agent.credits}));
         setIsAccepted(true);
     }
 
@@ -43,7 +46,7 @@ export default function ContractItem({ contract, token }) {
         <div className="flex items-center">
             <div>{contract.accepted || isAccepted ? formatDate(contract.terms.deadline) : formatDate(contract.expiration)}</div>
             <div className="grow px-3"><hr className="opacity-50"/></div>
-            {contract.accepted || isAccepted ? <span className="text-amber-600 text-xl p-2">&#10003; accepted</span> : <button onClick={() => handleAccept(token, contract.id)} className="bg-amber-600 text-xl p-2">Accept</button>}
+            {contract.accepted || isAccepted ? <span className="text-amber-600 text-xl p-2">&#10003; accepted</span> : <button onClick={() => handleAccept(token, contract.id)} className="btn-color hover:btn-color-hover text-xl">Accept</button>}
         </div>
     </li>
 }
