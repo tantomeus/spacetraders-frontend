@@ -1,3 +1,5 @@
+const BASE_URL = "https://api.spacetraders.io/v2"
+
 export async function signUp(callsign, faction) {
     const options = {
         method: "POST",
@@ -10,7 +12,7 @@ export async function signUp(callsign, faction) {
         }),
       };
 
-    const res = await fetch("https://api.spacetraders.io/v2/register", options);
+    const res = await fetch(`${BASE_URL}/register`, options);
     const { data } = await res.json();
     console.log(data)
     return data;
@@ -24,11 +26,30 @@ export async function getAgent(token) {
     },
   };
     
-  const res = await fetch("https://api.spacetraders.io/v2/my/agent", options);
+  const res = await fetch(`${BASE_URL}/my/agent`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
 }
+
+// export async function getAgents(token) {
+//   const url = "${BASE_URL}/agents";
+//   const options = {
+//     method: "GET",
+//     headers: {
+//       Accept: "application/json", 
+//       Authorization: `Bearer ${token}`
+//     }
+//   };
+
+//   try {
+//     const response = await fetch(url, options);
+//     const data = await response.json();
+//     console.log(data);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }
 
 export async function getFactions(token) {
   const options = {
@@ -38,7 +59,7 @@ export async function getFactions(token) {
     },
   };
     
-  const res = await fetch("https://api.spacetraders.io/v2/factions", options);
+  const res = await fetch(`${BASE_URL}/factions`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -52,7 +73,7 @@ export async function getSystems(token, page = 1) {
     },
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/systems?page=${page}`, options);
+  const res = await fetch(`${BASE_URL}/systems?limit=20&page=${page}`, options);
   const data = await res.json();
   console.log(data)
   return data;
@@ -66,7 +87,7 @@ export async function getWaypoints(token, system) {
     },
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/systems/${system}/waypoints?limit=20`, options);
+  const res = await fetch(`${BASE_URL}/systems/${system}/waypoints?limit=20`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -80,7 +101,7 @@ export async function getContracts(token) {
     },
   };
   
-  const res = await fetch("https://api.spacetraders.io/v2/my/contracts", options);
+  const res = await fetch(`${BASE_URL}/my/contracts`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -95,7 +116,7 @@ export async function acceptContract(token, id) {
     },
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/my/contracts/${id}/accept`, options);
+  const res = await fetch(`${BASE_URL}/my/contracts/${id}/accept`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -109,14 +130,85 @@ export async function getShips(token) {
     },
   };
   
-  const res = await fetch("https://api.spacetraders.io/v2/my/ships", options);
+  const res = await fetch(`${BASE_URL}/my/ships`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
 }
 
-
 // NAVIGATION
+
+export async function refuelShip(token, ship, units) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    // body: '{"units":"100"}'
+  };
+  
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/refuel`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+export async function refine(token, ship, resource) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: `{"produce":${resource}}`
+  };
+  
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/refine`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+export async function jettison(token, ship, resource, units) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: `{
+      "symbol":"${resource}",
+      "units":${units}
+    }`
+  };
+  
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/jettison`, options);
+  const {data} = await res.json();
+  console.log(data)
+  return data;
+}
+
+export async function transferCargo(token, ship, secondShip, cargo, units) {
+  console.log(ship, resource, units)
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: `{
+      "tradeSymbol":"${cargo}",
+      "units":${units},
+      "shipSymbol":"${secondShip}"
+    }`
+  };
+  
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/transfer`, options);
+  const {data} = await res.json();
+  console.log(data)
+  return data;
+}
 
 
 export async function dockOrOrbit(token, ship, type) {
@@ -128,7 +220,7 @@ export async function dockOrOrbit(token, ship, type) {
     },
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/${type}`, options);
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/${type}`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -146,7 +238,7 @@ export async function switchFlightMode(token, ship, mode) {
     }),
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/nav`, options);
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/nav`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -165,7 +257,7 @@ export async function flyToWaypoint(token, ship, destination) {
     }),
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/navigate`, options);
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/navigate`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -184,7 +276,21 @@ export async function warpOrJump(token, ship, waypoint, type) {
     }),
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/${type}`, options)
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/${type}`, options)
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+export async function getJumpGate(token, system, waypoint) {
+  const options = {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+  };
+  
+  const res = await fetch(`${BASE_URL}/systems/${system}/waypoints/${waypoint}/jump-gate`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -203,7 +309,7 @@ export async function mineAsteroid(token, ship) {
     }
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/extract`, options);
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/extract`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -226,7 +332,7 @@ export async function trade(token, ship, resource, quantity, type) {
     }),
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/my/ships/${ship}/${type}`, options);
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/${type}`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -241,7 +347,7 @@ export async function viewMarketplace(token, system, waypoint) {
     },
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/systems/${system}/waypoints/${waypoint}/market`, options);
+  const res = await fetch(`${BASE_URL}/systems/${system}/waypoints/${waypoint}/market`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -256,7 +362,7 @@ export async function getShipMarket(token, system, waypoint) {
     },
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/systems/${system}/waypoints/${waypoint}/shipyard`, options);
+  const res = await fetch(`${BASE_URL}/systems/${system}/waypoints/${waypoint}/shipyard`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
@@ -276,7 +382,7 @@ export async function purchaseShip(token, type, waypoint) {
     }),
   };
   
-  const res = await fetch(`https://api.spacetraders.io/v2/my/ships`, options);
+  const res = await fetch(`${BASE_URL}/my/ships`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
