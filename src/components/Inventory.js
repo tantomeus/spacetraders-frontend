@@ -1,33 +1,108 @@
-export default function Inventory({ ship }) {
+"use client";
 
-    return <div className="fixed z-[1000] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col w-96 divide-y divide-stone-500">
-        <div className="flex items-center p-4">
+import { jettison, refine, refuelShip } from "@/services/api";
+import { BsFillFuelPumpFill } from "react-icons/bs";
+import { GiRefinery } from "react-icons/gi";
+import { BiSolidTrashAlt } from "react-icons/bi";
+import { TiCancel } from "react-icons/ti";
+import { useState } from "react";
+
+export default function Inventory({ ship, setShips, waypoint, account, setAccount }) {
+    const [targetedItem, setTargetedItem] = useState("");
+    const [amount, setAmount] = useState(0);
+
+    const waypointHasMarketplace = waypoint.traits.find(trait => trait.symbol.includes("MARKETPLACE"));
+    const isShipDocked = ship.nav.status ==="DOCKED";
+    const isFuelFull = !(ship.fuel.capacity - ship.fuel.current);
+    const shipHasRefinery = ship.modules.find(module => module.symbol.includes("REFINERY"));
+
+    const { remainingSeconds } = ship.cooldown;
+
+    const resourcesRefine = ["COPPER_ORE", "SILVER_ORE", "GOLD_ORE", "ALUMINUM_ORE", "PLATINUM_ORE", "URANITE_ORE", "MERITIUM_ORE", "IRON_ORE", "FUEL"];
+    const isRefuelAvailable = waypointHasMarketplace && !isFuelFull && isShipDocked;
+
+    async function handleRefuel() {
+        const data = await refuelShip(account.token, ship.symbol);
+        setShips((ships) => ships.map((shipState) => ship.symbol === shipState.symbol ? {...shipState, fuel: data.fuel} : shipState));
+        setAccount((account) => ({...account, credits: data.agent.credits}));
+    }
+
+    async function handleRefine(resource) {
+        const data = await refine(account.token, ship.symbol, resource);
+        setShips((ships) => ships.map((shipState) => ship.symbol === shipState.symbol ? {...shipState, fuel: data.fuel} : shipState));
+    }
+
+    async function handleJettison(e, resource, units) {
+        e.preventDefault();
+        const data = await jettison(account.token, ship.symbol, resource, units);
+        setShips((ships) => ships.map((shipState) => ship.symbol === shipState.symbol ? {...shipState, cargo: data.cargo} : shipState));
+        setTargetedItem(false);
+        setAmount(0);
+    }
+
+    return <div className="window window-divide w-[30rem]">
+        <div className="flex items-center justify-between p-4">
             <h2 className="text-2xl">Inventory</h2>
         </div>
 
-        <div className="p-4 divide-y divide-stone-50">
-
-            <div className="flex justify-between py-4">
-                <span>CARGO: {ship.cargo.units}/{ship.cargo.capacity}</span>
-                <span>FUEL: {ship.fuel.current}/{ship.fuel.capacity}</span>
+        <div>
+            <div className="p-4 space-y-4">
+                <div className="flex justify-between items-center rounded-md border border-stone-50 p-2">
+                    <span>FUEL: {ship.fuel.current}/{ship.fuel.capacity}</span>
+                    <button disabled={!isRefuelAvailable}
+                    onClick={handleRefuel}
+                    className={!isRefuelAvailable ? "bg-stone-700 btn-color" : "btn-color hover:btn-color-hover"}>
+                        <BsFillFuelPumpFill className="h-6 w-6"/>
+                    </button>
+                </div>
             </div>
 
-            <ul className="pt-4">
-                {!ship.cargo.inventory.length ?
-                <li className="flex items-center">
+            <ul className="pt-0 p-4 space-y-4 overflow-auto max-h-[70vh]">
+                <li className="flex items-center hover:bg-stone-800">
                     <hr className="grow"/>
-                    <span className="px-2">No Cargo</span>
+                    <span className="px-2">{ship.cargo.units}/{ship.cargo.capacity}</span>
                     <hr className="grow"/>
                 </li>
-                :
-                ship.cargo.inventory.map((item, i) => <li className="flex items-center" key={i}>
-                    <span className="pr-2">{item.name}</span>
-                    <hr className="grow"/>
-                    <span className="pl-2">{item.units}</span>
-                </li>
+                {ship.cargo.inventory.map((item) => {
+                    const isRefineAvailable = resourcesRefine.includes(item.symbol)
+                    && !remainingSeconds
+                    && shipHasRefinery;
+
+
+                    return <li className="grid grid-cols-[1fr_0.7fr_5.5rem] gap-2 rounded-md text-sm border border-stone-50 p-2 hover:bg-stone-800" key={item.symbol}>
+                        <div className="flex items-center gap-2">
+                            <span className="">{item.name}</span>
+                            <hr className="grow"/>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="bg-stone-500 px-3 py-1 rounded-md min-w-[2.5rem] text-center">{item.units}</span>
+                            <hr className="grow"/>
+                        </div>
+                        <div className="flex justify-between">
+                            <button disabled={!isRefineAvailable}
+                            onClick={() => handleRefine(item.symbol.replace("_ORE", ""))}
+                            className={!isRefineAvailable ? "bg-stone-700 btn-color" : "btn-color hover:btn-color-hover"}><GiRefinery className="h-6 w-6"/></button>
+
+                            {targetedItem !== item.symbol && <button onClick={() => setTargetedItem(item.symbol)}
+                            className="btn-color btn-color hover:btn-color-hover"><BiSolidTrashAlt className="h-6 w-6"/></button>}
+
+                            {targetedItem === item.symbol && <button onClick={() => {
+                                setTargetedItem("");
+                                setAmount(0);
+                            }}
+                            className="btn-color hover:btn-color-hover"><TiCancel className="h-6 w-6"/></button>}
+                        </div>
+
+                        {targetedItem === item.symbol && <form onSubmit={(e) => handleJettison(e, targetedItem, amount)} className="col-span-full flex justify-between gap-4">
+                            <input value={amount} onChange={(e) => {
+                                if (!isNaN(+e.target.value)) setAmount(+(e.target.value));
+                                if (e.target.value > item.units) setAmount(+item.units);
+                            }} placeholder="Amount" className="grow bg-transparent border-stone-700 border rounded-md px-3 py-3"/>
+                            <button className="btn-color hover:btn-color-hover">jettison</button>
+                        </form>}
+                    </li>}
                 )}
             </ul>
-
         </div>
     </div>
 }
