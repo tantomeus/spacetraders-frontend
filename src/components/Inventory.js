@@ -6,8 +6,11 @@ import { GiRefinery } from "react-icons/gi";
 import { BiSolidTrashAlt } from "react-icons/bi";
 import { TiCancel } from "react-icons/ti";
 import { useState } from "react";
+import { useAccount } from "@/context/AccountContext";
+import { convertSeconds } from "@/helpers/helpers";
 
-export default function Inventory({ ship, setShips, waypoint, account, setAccount }) {
+export default function Inventory({ ship, waypoint }) {
+    const { account, setAccount, setShips } = useAccount();
     const [targetedItem, setTargetedItem] = useState("");
     const [amount, setAmount] = useState(0);
 
@@ -18,91 +21,152 @@ export default function Inventory({ ship, setShips, waypoint, account, setAccoun
 
     const { remainingSeconds } = ship.cooldown;
 
-    const resourcesRefine = ["COPPER_ORE", "SILVER_ORE", "GOLD_ORE", "ALUMINUM_ORE", "PLATINUM_ORE", "URANITE_ORE", "MERITIUM_ORE", "IRON_ORE", "FUEL"];
+    const resourcesRefine = [
+        "COPPER_ORE",
+        "SILVER_ORE",
+        "GOLD_ORE",
+        "ALUMINUM_ORE",
+        "PLATINUM_ORE",
+        "URANITE_ORE",
+        "MERITIUM_ORE",
+        "IRON_ORE",
+        "FUEL"
+    ];
+
     const isRefuelAvailable = waypointHasMarketplace && !isFuelFull && isShipDocked;
 
     async function handleRefuel() {
-        const data = await refuelShip(account.token, ship.symbol);
-        setShips((ships) => ships.map((shipState) => ship.symbol === shipState.symbol ? {...shipState, fuel: data.fuel} : shipState));
-        setAccount((account) => ({...account, credits: data.agent.credits}));
+        try {
+            const data = await refuelShip(account.token, ship.symbol);
+
+            if (!data) throw new Error('eheh');
+
+            setShips((ships) => ships.map((item) => ship.symbol === item.symbol
+            ? {...item, fuel: data.fuel}
+            : item));
+            setAccount((account) => ({...account, credits: data.agent.credits}));
+        } catch(err) {
+            console.error(err);
+        }
     }
 
     async function handleRefine(resource) {
-        const data = await refine(account.token, ship.symbol, resource);
-        setShips((ships) => ships.map((shipState) => ship.symbol === shipState.symbol ? {...shipState, fuel: data.fuel} : shipState));
+        try {
+            const data = await refine(account.token, ship.symbol, resource);
+
+            if (!data) throw new Error('eheh');
+
+            setShips((ships) => ships.map((item) => ship.symbol === item.symbol
+            ? {...item, fuel: data.fuel}
+            : item));
+        } catch(err) {
+            console.error(err);
+        }
     }
 
     async function handleJettison(e, resource, units) {
         e.preventDefault();
-        const data = await jettison(account.token, ship.symbol, resource, units);
-        setShips((ships) => ships.map((shipState) => ship.symbol === shipState.symbol ? {...shipState, cargo: data.cargo} : shipState));
-        setTargetedItem(false);
-        setAmount(0);
+        try {
+            const data = await jettison(account.token, ship.symbol, resource, units);
+
+            if (!data) throw new Error('eheh');
+
+            setShips((ships) => ships.map((item) => ship.symbol === item.symbol
+            ? {...item, cargo: data.cargo}
+            : item));
+
+            setTargetedItem("");
+            setAmount(0);
+        } catch(err) {
+            console.error(err);
+        }
     }
 
-    return <div className="window window-divide w-[30rem]">
-        <div className="flex items-center justify-between p-4">
+    return (
+    <div className="window window-divide w-[30rem]">
+        <div className="flex-between p-4">
             <h2 className="text-2xl">Inventory</h2>
+            {!!remainingSeconds && <span>{convertSeconds(remainingSeconds)}</span>}
         </div>
 
         <div>
-            <div className="p-4 space-y-4">
-                <div className="flex justify-between items-center rounded-md border border-stone-50 p-2">
-                    <span>FUEL: {ship.fuel.current}/{ship.fuel.capacity}</span>
-                    <button disabled={!isRefuelAvailable}
-                    onClick={handleRefuel}
-                    className={!isRefuelAvailable ? "bg-stone-700 btn-color" : "btn-color hover:btn-color-hover"}>
-                        <BsFillFuelPumpFill className="h-6 w-6"/>
-                    </button>
-                </div>
+            <div className="flex-between rounded-primary p-4">
+                <span>FUEL: {ship.fuel.current}/{ship.fuel.capacity}</span>
+
+                <button disabled={!isRefuelAvailable}
+                onClick={handleRefuel}
+                className={`btn ${!isRefuelAvailable ?
+                "disable-color" :
+                "btn-color hover:btn-color-reversed"}`}>
+                    <BsFillFuelPumpFill className="icon-size-primary"/>
+                </button>
             </div>
 
-            <ul className="pt-0 p-4 space-y-4 overflow-auto max-h-[70vh]">
-                <li className="flex items-center hover:bg-stone-800">
+            <ul className="pb-4 px-4 space-y-4 h-overflow">
+                <li className="flex items-center">
                     <hr className="grow"/>
                     <span className="px-2">{ship.cargo.units}/{ship.cargo.capacity}</span>
                     <hr className="grow"/>
                 </li>
+
                 {ship.cargo.inventory.map((item) => {
                     const isRefineAvailable = resourcesRefine.includes(item.symbol)
                     && !remainingSeconds
                     && shipHasRefinery;
 
-
-                    return <li className="grid grid-cols-[1fr_0.7fr_5.5rem] gap-2 rounded-md text-sm border border-stone-50 p-2 hover:bg-stone-800" key={item.symbol}>
+                    return (
+                    <li
+                    className="grid grid-cols-[1fr_0.7fr_5.5rem] gap-2 rounded-primary text-sm white-border p-2 item-hover-color"
+                    key={item.symbol}>
                         <div className="flex items-center gap-2">
                             <span className="">{item.name}</span>
                             <hr className="grow"/>
                         </div>
+
                         <div className="flex items-center gap-2">
-                            <span className="bg-stone-500 px-3 py-1 rounded-md min-w-[2.5rem] text-center">{item.units}</span>
+                            <span className="bg-stone-500 px-3 py-1 rounded-primary min-w-[2.5rem] text-center">
+                                {item.units}
+                            </span>
                             <hr className="grow"/>
                         </div>
+
                         <div className="flex justify-between">
                             <button disabled={!isRefineAvailable}
                             onClick={() => handleRefine(item.symbol.replace("_ORE", ""))}
-                            className={!isRefineAvailable ? "bg-stone-700 btn-color" : "btn-color hover:btn-color-hover"}><GiRefinery className="h-6 w-6"/></button>
+                            className={`btn ${!isRefineAvailable
+                            ? "disable-color"
+                            : "btn-color hover:btn-color-reversed"}`}>
+                                <GiRefinery className="h-6 w-6"/>
+                            </button>
 
-                            {targetedItem !== item.symbol && <button onClick={() => setTargetedItem(item.symbol)}
-                            className="btn-color btn-color hover:btn-color-hover"><BiSolidTrashAlt className="h-6 w-6"/></button>}
+                            {targetedItem !== item.symbol &&
+                            <button onClick={() => setTargetedItem(item.symbol)}
+                            className="btn btn-color hover:btn-color-reversed">
+                                <BiSolidTrashAlt className="h-6 w-6"/>
+                            </button>}
 
-                            {targetedItem === item.symbol && <button onClick={() => {
+                            {targetedItem === item.symbol &&
+                            <button onClick={() => {
                                 setTargetedItem("");
                                 setAmount(0);
-                            }}
-                            className="btn-color hover:btn-color-hover"><TiCancel className="h-6 w-6"/></button>}
+                            }} className="btn btn-color hover:btn-color-reversed">
+                                <TiCancel className="h-6 w-6"/>
+                            </button>}
                         </div>
 
-                        {targetedItem === item.symbol && <form onSubmit={(e) => handleJettison(e, targetedItem, amount)} className="col-span-full flex justify-between gap-4">
+                        {targetedItem === item.symbol &&
+                        <form
+                        onSubmit={(e) => handleJettison(e, targetedItem, amount)}
+                        className="col-span-full flex justify-between gap-4">
                             <input value={amount} onChange={(e) => {
                                 if (!isNaN(+e.target.value)) setAmount(+(e.target.value));
                                 if (e.target.value > item.units) setAmount(+item.units);
-                            }} placeholder="Amount" className="grow bg-transparent border-stone-700 border rounded-md px-3 py-3"/>
-                            <button className="btn-color hover:btn-color-hover">jettison</button>
+                            }} placeholder="Amount" className="grow input py-3"/>
+                            <button className="btn btn-color hover:btn-color-reversed">jettison</button>
                         </form>}
-                    </li>}
+                    </li>)}
                 )}
             </ul>
         </div>
-    </div>
+    </div>)
 }
