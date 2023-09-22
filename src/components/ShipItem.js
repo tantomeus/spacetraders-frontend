@@ -1,27 +1,36 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { dockOrOrbit, mineAsteroid } from "@/services/api";
+import { dockOrOrbit } from "@/services/api";
 import { FaHelicopterSymbol } from "react-icons/fa6"
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+
 import TravelWindow from "./TravelWindow";
 import FlightWindow from "./FlightWindow";
-import { convertSeconds, shipImg } from "@/helpers/helpers";
 import Overlay from "./Overlay";
 import ShipImg from "./ShipImg";
 import Inventory from "./Inventory";
+import Mining from "./Mining";
+import TransferCargo from "./TransferCargo";
 
 export default function ShipItem({ ship, system }) {
-    const time = Math.trunc((new Date(ship.nav.route.arrival) - new Date()) / 1000);
-    const [timer, setTimer] = useState(() => convertSeconds(time));
+    const remainingTravel = useMemo(() => {
+        return Math.trunc((new Date(ship.nav.route.arrival) - new Date()) / 1000);
+    }, [ship.nav.route.arrival])
 
-    const [status, setStatus] = useState(ship.nav.status);
+    const [seconds, setSeconds] = useState(remainingTravel);
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
-    const [openedWindow, setOpenedWindow] = useState(false); // travel, flightInfo, inventory
-    const { account, setRerender } = useAccount();
+    // travel, flightInfo, inventory, mining, transfer
+    const [openedWindow, setOpenedWindow] = useState("");
+    const { account, setShips, fetchShipsData } = useAccount();
     const ref = useRef(null);
 
-    function handleOpenDropdown() {
+    const waypoint = system?.find((waypoint) => ship.nav.waypointSymbol === waypoint.symbol);
+    const status = ship.nav.status;
+    const remainingMine = ship.cooldown.remainingSeconds;
+
+    function handleToggleDropdown() {
         setIsDropDownOpen((value) => !value);
     }
 
@@ -30,19 +39,16 @@ export default function ShipItem({ ship, system }) {
         setIsDropDownOpen(false);
     }
 
-    function handleDockOrOrbit() {
-        if (status === "DOCKED") {
-            dockOrOrbit(account.token, ship.symbol, "orbit")
-            setStatus("IN_ORBIT");
-        } else {
-            dockOrOrbit(account.token, ship.symbol, "dock");
-            setStatus("DOCKED");
+    async function handleDockOrOrbit() {
+        try {
+            const data = await dockOrOrbit(account.token, ship.symbol, status === "DOCKED" ? "orbit" : "dock");
+            if (!data) throw new Error("watta u doin");
+            setShips((ships) => ships.map(item => item.symbol == ship.symbol ? {
+                ...item, nav: data.nav
+            } : item));
+        } catch(err) {
+            console.error(err);
         }
-    }
-
-    function handleMineAsteroid() {
-        mineAsteroid(account.token, ship.symbol);
-        setIsDropDownOpen(false);
     }
 
     useEffect(() => {
@@ -51,78 +57,127 @@ export default function ShipItem({ ship, system }) {
             setIsDropDownOpen(false);
         }
         document.body.addEventListener("mousedown", close);
+
         return function() {
             document.body.removeEventListener("mousedown", close);
         }
     }, []);
 
     useEffect(() => {
-        if (status === "IN_TRANSIT" && time >= 0) {
+        if (status === "IN_TRANSIT" && remainingTravel > 0) {
             let interval = setInterval(() => {
-                setTimer(time);
+                setSeconds((time) => time - 1);
             }, 1000);
 
-            return function () {
+            setTimeout(() => {
+                fetchShipsData(account.token)
+            }, remainingTravel * 1000 + 1000);
+
+            return function() {
                 clearInterval(interval);
             }
         }
-    }, [time, status, openedWindow]);
+    }, [remainingTravel, status, account.token, fetchShipsData]);
 
     useEffect(() => {
-        if (status === "IN_TRANSIT") {
-            setTimeout(() => {
-                setRerender((rerender) => !rerender);
-            }, time * 1000 + 1000);
+        if (remainingMine) {
+            const interval = setInterval(() => {
+                setShips((ships) => ships.map((item) => ship.symbol === item.symbol ?
+                {...item, cooldown: {...item.cooldown, remainingSeconds: item.cooldown.remainingSeconds - 1}} :
+                item));
+            }, 1000);
+        
+            return function() {
+                clearInterval(interval);
+            }
         }
-    }, []);
+    }, [remainingMine, ship.symbol, setShips]);
+
     
     if (status === "IN_TRANSIT") return (
-    <li className="flex items-center gap-6 hover:bg-stone-800 p-4">
+    <li className="flex items-center gap-6 item-hover-color p-4 rounded-primary">
         <ShipImg status={status} ship={ship}/>
+
         <div className="space-y-4">
-            <h3 className="font-medium">{ship.symbol}</h3>
-            <button onClick={() => handleOpenWindow("inventory")} className="text-xs bg-stone-600 px-2 py-1 rounded-full uppercase hover:bg-stone-500">inventory</button>
+            <div className="flex gap-2 items-center text-md">
+                <h3>{ship.symbol}</h3>
+                &bull;
+                <span>{ship.frame.name.replace("Frame ", "")}</span>
+            </div>
+
+            <button onClick={() => handleOpenWindow("inventory")}
+            className="text-xs px-2 py-1 rounded-full uppercase bg-stone-600 hover:bg-stone-500">
+                inventory
+            </button>
         </div>
-        <button onClick={() => handleOpenWindow("flightInfo")} className="ml-auto btn-color hover:btn-color-hover text-xs/[1rem]">VIEW FLIGHT</button>
 
-        {openedWindow === "flightInfo" && <>
-            <FlightWindow ship={ship} timer={timer}/>
+        <button onClick={() => handleOpenWindow("flightInfo")}
+        className="ml-auto btn btn-color hover:btn-color-reversed text-xs/[1rem]">VIEW FLIGHT</button>
+
+        {openedWindow === "flightInfo" && createPortal(<>
+            <FlightWindow ship={ship} seconds={seconds}/>
             <Overlay onClose={setOpenedWindow}/>
-        </>}
+        </>, document.body)}
 
-        {openedWindow === "inventory" && <>
+        {openedWindow === "inventory" && createPortal(<>
             <Inventory ship={ship}/>
             <Overlay onClose={setOpenedWindow}/>
-        </>}
+        </>, document.body)}
     </li>)
 
-    return <li className="flex items-center gap-6 hover:bg-stone-800 p-4">
+
+    return (
+    <li className="flex items-center gap-6 item-hover-color p-4 rounded-primary">
         <div className="relative flex justify-center items-center h-20 w-20">
-            <FaHelicopterSymbol className="absolute p-2 rounded-full h-full w-full bg-stone-400 fill-amber-600"/>
+            <FaHelicopterSymbol
+            className="absolute p-2 rounded-full h-full w-full bg-stone-400 fill-amber-600"/>
             <ShipImg onClick={handleDockOrOrbit} status={status} ship={ship}/>
         </div>
+
         <div className="space-y-4">
-            <h3 className="font-medium">{ship.symbol}</h3>
-            <button onClick={() => handleOpenWindow("inventory")} className="text-xs bg-stone-600 px-2 py-1 rounded-full uppercase hover:bg-stone-500">inventory</button>
+            <div className="flex gap-2 items-center text-md">
+                <h3>{ship.symbol}</h3>
+                &bull;
+                <span>{ship.frame.name.replace("Frame ", "")}</span>
+            </div>
+
+            <button onClick={() => handleOpenWindow("inventory")}
+            className="text-xs px-2 py-1 rounded-full uppercase bg-stone-600 hover:bg-stone-500">
+                inventory
+            </button>
         </div>
+
         <div ref={ref} className="relative ml-auto">
-            <button onClick={handleOpenDropdown} className="btn-color hover:btn-color-hover text-xs/[1rem]">COMMAND</button>
+            <button onClick={handleToggleDropdown}
+            className="btn btn-color hover:btn-color-reversed text-xs/[1rem]">
+                COMMAND
+            </button>
 
             {isDropDownOpen && <div className="z-50 rounded-lg absolute right-0 top-10 flex flex-col w-28 bg-stone-700 divide-y divide-stone-500 overflow-hidden">
-                <button onClick={() => handleOpenWindow("travel")} className="text-xs text-left p-3 hover:bg-stone-600">Travel</button>
-                <button onClick={handleMineAsteroid} className="text-xs text-left p-3 hover:bg-stone-600">Mine</button>
-                <button className="text-xs text-left p-3 hover:bg-stone-600">Refuel</button>
+                <button onClick={() => handleOpenWindow("travel")} className="dropdown-item">Travel</button>
+                <button onClick={() => handleOpenWindow("mining")} className="dropdown-item">Mine</button>
+                <button onClick={() => handleOpenWindow("transfer")} className="dropdown-item">Transfer</button>
             </div>}
         </div>
-        
-        {openedWindow === "travel" && <>
-            <TravelWindow onNavigation={setOpenedWindow} ship={ship} departureSymbol={ship.nav.waypointSymbol} waypoints={system}/>
-            <Overlay onClose={setOpenedWindow}/>
-        </>}
 
-        {openedWindow === "inventory" && <>
-            <Inventory ship={ship}/>
+        {openedWindow === "travel" && createPortal(<>
+            <TravelWindow onNavigation={setOpenedWindow} ship={ship} waypoints={system}/>
             <Overlay onClose={setOpenedWindow}/>
-        </>}
-    </li>
+        </>, document.body)}
+
+        {openedWindow === "inventory" && createPortal(<>
+            <Inventory waypoint={waypoint} ship={ship}/>
+            <Overlay onClose={setOpenedWindow}/>
+        </>, document.body)}
+
+        {openedWindow === "mining" && createPortal(<>
+            <Mining ship={ship} waypoint={waypoint}/>
+            <Overlay onClose={setOpenedWindow}/>
+        </>, document.body)}
+
+        {openedWindow === "transfer" && createPortal(<>
+            <TransferCargo ship={ship} waypoint={waypoint}/>
+            <Overlay onClose={setOpenedWindow}/>
+        </>, document.body)}
+    </li>)
 }

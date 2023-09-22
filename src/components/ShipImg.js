@@ -7,15 +7,15 @@ export default function ShipImg({ status, ship, onClick }) {
     function shipImg(type) {
         switch(type) {
             case "FRAME_MINER":
-                return {backgroundPosition: "-352px -65px", top: "-0.1rem", imageRendering: "pixelated"};
-            case "FRAME_LIGHT_FREIGHTER":
-                return {backgroundPosition: "-320px -96px", top: "0.1rem", imageRendering: "pixelated"};
-            case "FRAME_FRIGATE":
-                return {backgroundPosition: "-320px -96px", top: "0.1rem", imageRendering: "pixelated"};
+                return {backgroundPosition: "-22rem -4.06rem", top: "-0.1rem", imageRendering: "pixelated"};
             case "FRAME_HEAVY_FREIGHTER":
-                return {backgroundPosition: "-288px -96px", top: "0.1rem", imageRendering: "pixelated"};
+                return {backgroundPosition: "-20rem -6rem", top: "0.1rem", imageRendering: "pixelated"};
+            case "FRAME_FRIGATE":
+                return {backgroundPosition: "-18rem -6rem", top: "0.1rem", imageRendering: "pixelated"};
+            case "FRAME_LIGHT_FREIGHTER":
+                return {backgroundPosition: "-18rem -6rem", top: "0.1rem", imageRendering: "pixelated"};
             case "FRAME_DRONE":
-                return {backgroundPosition: "-224px -96px", top: "0rem", imageRendering: "pixelated"};
+                return {backgroundPosition: "-14rem -6rem", top: "0rem", imageRendering: "pixelated"};
             default:
                 return {display: "none"};
         }
@@ -23,15 +23,20 @@ export default function ShipImg({ status, ship, onClick }) {
 
     if (onClick) return (
         <div onClick={onClick}
-        className={`cursor-pointer relative h-8 w-8 transition duration-300 ease-out ${undocked}`}>
-            <div style={{backgroundPosition: "-416px 0px", imageRendering: "pixelated"}} className="bg-[url('/assets/ships.png')] h-8 w-8 absolute z-10"></div>
-            <div style={shipImg(ship?.frame.symbol)} className="bg-[url('/assets/ships.png')] h-8 w-8 absolute"></div>
+        className={`cursor-pointer relative icon-size-primary transition-primary ${undocked}`}>
+            <div style={{backgroundPosition: "-26rem 0rem", imageRendering: "pixelated"}}
+            className="bg-[url('/assets/ships.png')] icon-size-primary absolute z-10"></div>
+            <div style={shipImg(ship?.frame.symbol)}
+            className="bg-[url('/assets/ships.png')] icon-size-primary absolute"></div>
         </div>
     )
 
-    return <div
-    className={`relative h-8 w-8 transition duration-300 ease-out ${undocked}`}>
-        <div style={{backgroundPosition: "-416px 0px", imageRendering: "pixelated"}} className="bg-[url('/assets/ships.png')] h-8 w-8 absolute z-10"></div>
-        <div style={shipImg(ship?.frame.symbol)} className="bg-[url('/assets/ships.png')] h-8 w-8 absolute"></div>
-    </div>
+    return (
+    <div
+    className={`relative icon-size-primary transition-primary ${undocked}`}>
+        <div style={{backgroundPosition: "-26rem 0rem", imageRendering: "pixelated"}}
+        className="bg-[url('/assets/ships.png')] icon-size-primary absolute z-10"></div>
+        <div style={shipImg(ship?.frame.symbol)}
+        className="bg-[url('/assets/ships.png')] icon-size-primary absolute"></div>
+    </div>)
 }
