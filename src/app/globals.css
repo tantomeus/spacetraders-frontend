@@ -7,12 +7,20 @@
       @apply box-border;
     }
 
-    .btn-color {
-      @apply bg-amber-600 text-stone-50 rounded-md p-2 uppercase;
+    .btn {
+      @apply rounded-primary p-2 uppercase;
     }
 
-    .btn-color-hover {
-      @apply text-amber-600 bg-stone-50 rounded-md p-2 uppercase;
+    .btn-color {
+      @apply bg-amber-600 text-stone-50;
+    }
+
+    .btn-color-reversed {
+      @apply text-amber-600 bg-stone-50;
+    }
+
+    .disable-color {
+      @apply bg-stone-700;
     }
 
     .credits {
@@ -20,7 +28,7 @@
     }
 
     .window {
-      @apply fixed z-[1000] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col rounded-md;
+      @apply fixed z-[1000] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-stone-900 flex flex-col rounded-primary;
     }
 
     .window-divide {
@@ -28,7 +36,43 @@
     }
 
     .input {
-      @apply bg-transparent border-stone-700 border rounded-md px-3;
+      @apply bg-transparent border-stone-700 border rounded-primary px-3;
+    }
+
+    .flex-between {
+      @apply flex justify-between items-center;
+    }
+
+    .item-hover-color {
+      @apply hover:bg-stone-800;
+    }
+
+    .h-overflow {
+      @apply max-h-[60vh] overflow-y-auto overflow-x-hidden;
+    }
+
+    .white-border {
+      @apply border-solid border border-stone-50;
+    }
+
+    .grey-border {
+      @apply border-solid border border-stone-500;
+    }
+
+    .icon-size-primary {
+      @apply h-8 w-8;
+    }
+
+    .transition-primary {
+      @apply transition duration-300 ease-out;
+    }
+
+    .rounded-primary {
+      @apply rounded-md;
+    }
+
+    .dropdown-item {
+      @apply text-xs text-left p-3 hover:bg-stone-600;
     }
 }
 
