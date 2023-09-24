@@ -12,7 +12,8 @@ export default function TransferCargo({ ship }) {
     const [selectedShip, setSelectedShip] = useState({});
     const availableShips = ships.filter(item => ship.symbol !== item.symbol
         && ship.nav.waypointSymbol === item.nav.waypointSymbol
-        && ship.nav.status === item.nav.status);
+        && ship.nav.status === item.nav.status
+        && item.cargo.capacity > 0);
 
     return (
     <div className="window window-divide w-[50rem]">
