@@ -4,12 +4,14 @@ import { useAccount } from "@/context/AccountContext";
 import { convertSeconds } from "@/helpers/helpers";
 import { mineAsteroid } from "@/services/api";
 
-export default function Mining({ ship, waypoint }) {
+export default function Mining({ ship, waypoint, remainingSeconds }) {
     const { account, setShips } = useAccount();
-    const resources = waypoint.traits?.filter(({ symbol }) => symbol.includes("DEPOSITS"));
-    const isShipDocked = ship.nav.status !=="IN_ORBIT";
 
-    const { remainingSeconds } = ship.cooldown;
+    const onAsteroid = waypoint.type === "ASTEROID_FIELD";
+    const resources = waypoint.traits?.filter(({ symbol }) => symbol.includes("DEPOSITS"));
+    const isShipInOrbit = ship.nav.status ==="IN_ORBIT";
+
+    const ableToMine = onAsteroid && !remainingSeconds && isShipDocked;
 
     async function handleMineAsteroid() {
         try {
@@ -30,8 +32,8 @@ export default function Mining({ ship, waypoint }) {
         <div className="flex-between p-4">
             <h2 className="text-2xl">Mining</h2>
             {!!remainingSeconds && <span>{convertSeconds(remainingSeconds)}</span>}
-            {!remainingSeconds && <button disabled={isShipDocked} onClick={handleMineAsteroid}
-            className={`btn ${isShipDocked
+            {!remainingSeconds && <button disabled={!ableToMine} onClick={handleMineAsteroid}
+            className={`btn ${!ableToMine
             ? "disable-color"
             : "btn-color hover:btn-color-reversed"}`}>
                 MINE!
@@ -39,6 +41,7 @@ export default function Mining({ ship, waypoint }) {
         </div>
 
         <div className="p-4 space-y-4">
+            {!onAsteroid && <p className="text-center text-xl">This is not an asteroid!</p>}
             {resources?.map(resource => 
             <div key={resource.symbol}>
                 <div className="flex gap-2 items-center">

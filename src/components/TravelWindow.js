@@ -18,6 +18,7 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
         transform: `translateX(${translateX})`,
         transition: "all 0.4s"
     }
+    const iconStyles = "cursor-pointer hover:fill-amber-500 absolute h-4 w-4 top-[50%]";
 
     const speed = 0.04857 * ship.engine.speed;
 
@@ -63,22 +64,30 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
 
             <div className="flex justify-center items-center">
                 <button onClick={() => handleFlightMode(account.token, ship.symbol, "CRUISE")}
-                className={`${flightMode === "CRUISE" ? "btn-color" : "hover:btn-color-reversed"} border p-2 text-xs/[1rem] skew-x-[20deg]`}>
+                className={`${flightMode === "CRUISE"
+                ? "btn-color"
+                : "hover:btn-color-reversed"} border p-2 text-xs/[1rem] skew-x-[20deg]`}>
                     <span className="block skew-x-[-20deg]">CRUISE</span>
                 </button>
 
                 <button onClick={() => handleFlightMode(account.token, ship.symbol, "BURN")}
-                className={`${flightMode === "BURN" ? "btn-color" : "hover:btn-color-reversed"} border p-2 text-xs/[1rem] skew-x-[20deg]`}>
+                className={`${flightMode === "BURN"
+                ? "btn-color"
+                : "hover:btn-color-reversed"} border p-2 text-xs/[1rem] skew-x-[20deg]`}>
                     <span className="block skew-x-[-20deg]">BURN</span>
                 </button>
 
                 <button onClick={() => handleFlightMode(account.token, ship.symbol, "DRIFT")}
-                className={`${flightMode === "DRIFT" ? "btn-color" : "hover:btn-color-reversed"} border p-2 text-xs/[1rem] skew-x-[20deg]`}>
+                className={`${flightMode === "DRIFT"
+                ? "btn-color"
+                : "hover:btn-color-reversed"} border p-2 text-xs/[1rem] skew-x-[20deg]`}>
                     <span className="block skew-x-[-20deg]">DRIFT</span>
                 </button>
                 
                 <button onClick={() => handleFlightMode(account.token, ship.symbol, "STEALTH")}
-                className={`${flightMode === "STEALTH" ? "btn-color" : "hover:btn-color-reversed"} border p-2 text-xs/[1rem] skew-x-[20deg]`}>
+                className={`${flightMode === "STEALTH"
+                ? "btn-color"
+                : "hover:btn-color-reversed"} border p-2 text-xs/[1rem] skew-x-[20deg]`}>
                     <span className="block skew-x-[-20deg]">STEALTH</span>
                 </button>
             </div>
@@ -92,14 +101,14 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
                     setTranslateX("-50%");
                     setControlledWaypoint("");
                 }}
-                className="cursor-pointer hover:fill-amber-500 absolute h-4 w-4 top-[50%] right-[50%] -translate-y-1/2 -translate-x-1/2"/>
+                className={`${iconStyles} right-[50%] -translate-y-1/2 -translate-x-1/2`}/>
 
                 <AiOutlineRight
                 onClick={() => {
                     setTranslateX("0%");
                     setControlledWaypoint("");
                 }}
-                className="cursor-pointer hover:fill-amber-500 absolute h-4 w-4 top-[50%] right-[0] -translate-y-1/2 -translate-x-1/2"/>
+                className={`${iconStyles} right-[0] -translate-y-1/2 -translate-x-1/2`}/>
 
                 {["warp", "jump"].map(module => {
                 const hasModule = !ship.modules.find(({symbol}) => symbol.includes(module.toUpperCase()));
@@ -121,9 +130,10 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
                         <span></span>
 
                         <button
-                        onClick={(e) => handleTravel(e, account.token, ship.symbol, planet.symbol)}
                         disabled={isShipDocked}
-                        className={`btn ${isShipDocked ? "disable-color" : "btn-color hover:btn-color-reversed"} text-xs/[1rem]`}>
+                        className={`btn ${isShipDocked
+                        ? "disable-color"
+                        : "btn-color hover:btn-color-reversed"} text-xs/[1rem]`}>
                             {module}
                         </button>
                     </form>
@@ -137,7 +147,8 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
 
             const {x, y} = (arr.find(item => item.symbol === departureSymbol));
             const timeSpending = ((x - planet.x)**2 + (y - planet.y)**2)**0.5 / speed;
-            const fuelSpending = ((Math.trunc(speed * timeSpending * 1.008) || 1) * flightModeFactor(flightMode).fuel) || 1;
+            const fuelSpending = ((Math.trunc(speed * timeSpending * 1.008) || 1)
+            * flightModeFactor(flightMode).fuel) || 1;
 
             const displayed = (timeSpending || 10) * 3 * flightModeFactor(flightMode).speed;
 
@@ -158,7 +169,9 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
                 <button
                 onClick={(e) => handleTravel(e, account.token, ship.symbol, planet.symbol)}
                 disabled={!canFly}
-                className={`btn ${!canFly ? "disable-color" : "btn-color hover:btn-color-reversed"} text-xs/[1rem]`}>
+                className={`btn ${!canFly
+                ? "disable-color"
+                : "btn-color hover:btn-color-reversed"} text-xs/[1rem]`}>
                     SELECT
                 </button>
             </li>)})}

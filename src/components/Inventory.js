@@ -9,17 +9,15 @@ import { useState } from "react";
 import { useAccount } from "@/context/AccountContext";
 import { convertSeconds } from "@/helpers/helpers";
 
-export default function Inventory({ ship, waypoint }) {
+export default function Inventory({ ship, waypoint, remainingSeconds }) {
     const { account, setAccount, setShips } = useAccount();
     const [targetedItem, setTargetedItem] = useState("");
     const [amount, setAmount] = useState(0);
 
-    const waypointHasMarketplace = waypoint.traits.find(trait => trait.symbol.includes("MARKETPLACE"));
+    const waypointHasMarketplace = waypoint?.traits.find(trait => trait.symbol.includes("MARKETPLACE"));
     const isShipDocked = ship.nav.status ==="DOCKED";
     const isFuelFull = !(ship.fuel.capacity - ship.fuel.current);
     const shipHasRefinery = ship.modules.find(module => module.symbol.includes("REFINERY"));
-
-    const { remainingSeconds } = ship.cooldown;
 
     const resourcesRefine = [
         "COPPER_ORE",
