@@ -1,35 +1,31 @@
 "use client";
 
-import { jettison, refine, refuelShip } from "@/services/api";
+import { refuelShip } from "@/services/api";
 import { BsFillFuelPumpFill } from "react-icons/bs";
-import { GiRefinery } from "react-icons/gi";
-import { BiSolidTrashAlt } from "react-icons/bi";
-import { TiCancel } from "react-icons/ti";
-import { useState } from "react";
 import { useAccount } from "@/context/AccountContext";
 import { convertSeconds } from "@/helpers/helpers";
 
+import InventoryItem from "./InventoryItem";
+
+const resourcesForRefine = [
+    "COPPER_ORE",
+    "SILVER_ORE",
+    "GOLD_ORE",
+    "ALUMINUM_ORE",
+    "PLATINUM_ORE",
+    "URANITE_ORE",
+    "MERITIUM_ORE",
+    "IRON_ORE",
+    "FUEL"
+];
+
 export default function Inventory({ ship, waypoint, remainingSeconds }) {
     const { account, setAccount, setShips } = useAccount();
-    const [targetedItem, setTargetedItem] = useState("");
-    const [amount, setAmount] = useState(0);
 
     const waypointHasMarketplace = waypoint?.traits.find(trait => trait.symbol.includes("MARKETPLACE"));
     const isShipDocked = ship.nav.status ==="DOCKED";
     const isFuelFull = !(ship.fuel.capacity - ship.fuel.current);
     const shipHasRefinery = ship.modules.find(module => module.symbol.includes("REFINERY"));
-
-    const resourcesRefine = [
-        "COPPER_ORE",
-        "SILVER_ORE",
-        "GOLD_ORE",
-        "ALUMINUM_ORE",
-        "PLATINUM_ORE",
-        "URANITE_ORE",
-        "MERITIUM_ORE",
-        "IRON_ORE",
-        "FUEL"
-    ];
 
     const isRefuelAvailable = waypointHasMarketplace && !isFuelFull && isShipDocked;
 
@@ -48,37 +44,6 @@ export default function Inventory({ ship, waypoint, remainingSeconds }) {
         }
     }
 
-    async function handleRefine(resource) {
-        try {
-            const data = await refine(account.token, ship.symbol, resource);
-
-            if (!data) throw new Error('eheh');
-
-            setShips((ships) => ships.map((item) => ship.symbol === item.symbol
-            ? {...item, fuel: data.fuel}
-            : item));
-        } catch(err) {
-            console.error(err);
-        }
-    }
-
-    async function handleJettison(e, resource, units) {
-        e.preventDefault();
-        try {
-            const data = await jettison(account.token, ship.symbol, resource, units);
-
-            if (!data) throw new Error('eheh');
-
-            setShips((ships) => ships.map((item) => ship.symbol === item.symbol
-            ? {...item, cargo: data.cargo}
-            : item));
-
-            setTargetedItem("");
-            setAmount(0);
-        } catch(err) {
-            console.error(err);
-        }
-    }
 
     return (
     <div className="window window-divide w-[30rem]">
@@ -107,63 +72,18 @@ export default function Inventory({ ship, waypoint, remainingSeconds }) {
                     <hr className="grow"/>
                 </li>
 
-                {ship.cargo.inventory.map((item) => {
-                    const isRefineAvailable = resourcesRefine.includes(item.symbol)
-                    && !remainingSeconds
-                    && shipHasRefinery;
+               {!ship.cargo.units && <li className="text-center">It{"'"}s empty here...</li>}
 
-                    return (
-                    <li
-                    className="grid grid-cols-[1fr_0.7fr_5.5rem] gap-2 rounded-primary text-sm white-border p-2 item-hover-color"
-                    key={item.symbol}>
-                        <div className="flex items-center gap-2">
-                            <span className="">{item.name}</span>
-                            <hr className="grow"/>
-                        </div>
+                {ship.cargo.inventory.map(item => {
+                    const isRefineAvailable = resourcesForRefine.includes(item.symbol)
+                    && !remainingSeconds && shipHasRefinery;
 
-                        <div className="flex items-center gap-2">
-                            <span className="bg-stone-500 px-3 py-1 rounded-primary min-w-[2.5rem] text-center">
-                                {item.units}
-                            </span>
-                            <hr className="grow"/>
-                        </div>
-
-                        <div className="flex justify-between">
-                            <button disabled={!isRefineAvailable}
-                            onClick={() => handleRefine(item.symbol.replace("_ORE", ""))}
-                            className={`btn ${!isRefineAvailable
-                            ? "disable-color"
-                            : "btn-color hover:btn-color-reversed"}`}>
-                                <GiRefinery className="h-6 w-6"/>
-                            </button>
-
-                            {targetedItem !== item.symbol &&
-                            <button onClick={() => setTargetedItem(item.symbol)}
-                            className="btn btn-color hover:btn-color-reversed">
-                                <BiSolidTrashAlt className="h-6 w-6"/>
-                            </button>}
-
-                            {targetedItem === item.symbol &&
-                            <button onClick={() => {
-                                setTargetedItem("");
-                                setAmount(0);
-                            }} className="btn btn-color hover:btn-color-reversed">
-                                <TiCancel className="h-6 w-6"/>
-                            </button>}
-                        </div>
-
-                        {targetedItem === item.symbol &&
-                        <form
-                        onSubmit={(e) => handleJettison(e, targetedItem, amount)}
-                        className="col-span-full flex justify-between gap-4">
-                            <input value={amount} onChange={(e) => {
-                                if (!isNaN(+e.target.value)) setAmount(+(e.target.value));
-                                if (e.target.value > item.units) setAmount(+item.units);
-                            }} placeholder="Amount" className="grow input py-3"/>
-                            <button className="btn btn-color hover:btn-color-reversed">jettison</button>
-                        </form>}
-                    </li>)}
-                )}
+                    return <InventoryItem
+                    key={item.symbol}
+                    ship={ship}
+                    item={item}
+                    isRefineAvailable={isRefineAvailable}/>
+                })}
             </ul>
         </div>
     </div>)
