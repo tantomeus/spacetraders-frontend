@@ -4,26 +4,29 @@ import { useAccount } from "@/context/AccountContext";
 import { convertSeconds } from "@/helpers/helpers";
 import { mineAsteroid } from "@/services/api";
 
+const errorMessage = "I missed the part where that's my problem";
+
 export default function Mining({ ship, waypoint, remainingSeconds }) {
-    const { account, setShips } = useAccount();
+    const { account, setShips, notify } = useAccount();
 
     const onAsteroid = waypoint.type === "ASTEROID_FIELD";
     const resources = waypoint.traits?.filter(({ symbol }) => symbol.includes("DEPOSITS"));
     const isShipInOrbit = ship.nav.status ==="IN_ORBIT";
+    const hasEmptySpace = ship.cargo.capacity !== ship.cargo.units;
 
-    const ableToMine = onAsteroid && !remainingSeconds && isShipDocked;
+    const ableToMine = onAsteroid && !remainingSeconds && isShipInOrbit && hasEmptySpace;
 
     async function handleMineAsteroid() {
         try {
             const data = await mineAsteroid(account.token, ship.symbol);
 
-            if (!data) throw new Erorr("erorp");
+            if (!data) throw new Erorr(errorMessage);
             
             setShips((ships) => ships.map((shipState) => ship.symbol === shipState.symbol ?
             {...shipState, cargo: data.cargo, cooldown: data.cooldown} :
             shipState));
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 

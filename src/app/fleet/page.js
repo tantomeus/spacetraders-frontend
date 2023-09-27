@@ -7,9 +7,13 @@ import { getWaypoints } from "@/services/api";
 import PlanetItem from "@/components/PlanetImg";
 import ShipItem from "@/components/ShipItem";
 import Link from "next/link";
+import SkeletonLoader from "@/components/SkeletonLoader";
+
+const errorMessage = "I missed the part where that's my problem";
 
 export default function Fleet() {
-    const { account, ships } = useAccount();
+    const { account, ships, notify } = useAccount();
+    const [isLoading, setIsLoading] = useState(true);
     const [systems, setSystems] = useState([]);
 
     const uniqueSystems = useMemo(() => {
@@ -26,22 +30,27 @@ export default function Fleet() {
 
     useEffect(() => {
         async function fetchData() {
+            setIsLoading(true);
             try {
                 const data = await Promise.all(uniqueSystems.map((system) => getWaypoints(account.token, system)));
-                if (!data) throw new Error("real");
+                if (!data) throw new Error(errorMessage);
                 setSystems(data);
             } catch(err) {
-                console.error(err);
+                notify(err.message);
+            } finally {
+                if (ships.length) setIsLoading(false);
             }
         }
         fetchData();
-    }, [uniqueSystems, account.token]);
+    }, [uniqueSystems, account.token, ships.length]);
 
 
     return (
     <section className="w-[60%] mx-auto">
         <ul className="space-y-5">
-            {!!transit?.length && (
+            {isLoading && ["", "", ""].map((_, i) => <SkeletonLoader key={i}/>)}
+
+            {!isLoading && !!transit?.length && (
             <li className="bg-stone-900 rounded-primary col-span-full">
                 <div className="min-h-[4.28rem] p-4">
                     <h2 className="text-2xl font-bold uppercase">Transit</h2>
@@ -54,7 +63,7 @@ export default function Fleet() {
                 </ul>
             </li>)}
 
-            {collectionOfShips.map(({system, ships}, i) => {
+            {!isLoading  && collectionOfShips.map(({system, ships}, i) => {
 
                 return (
                 <li key={system} className="bg-stone-900 rounded-primary">

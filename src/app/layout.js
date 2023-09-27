@@ -5,6 +5,7 @@ import './globals.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AccountProvider from '@/context/AccountContext';
 import Footer from '@/components/Footer';
+import Toast from '@/components/Toast';
 
 export const metadata = {
   title: 'Create Next App',
@@ -26,12 +27,13 @@ export default function RootLayout({ children }) {
         <AccountProvider>
             <QueryClientProvider client={queryClient}>
               <Header/>
-              <main className="max-w-7xl mx-auto min-h-[80vh]">
+              <main className="flex flex-col max-w-7xl mx-auto min-h-[80vh]">
                 {children}
               </main>
               <Footer/>
             </QueryClientProvider>
         </AccountProvider>
+        <Toast/>
       </body>
     </html>
   )

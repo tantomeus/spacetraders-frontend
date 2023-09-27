@@ -11,8 +11,10 @@ import Workshop from "./Workshop";
 import BackButton from "./BackButton";
 import SkeletonLoader from "./SkeletonLoader";
 
+const errorMessage = "I missed the part where that's my problem";
+
 export default function Shipyard({ system, waypoint }) {
-    const { ships, account } = useAccount();
+    const { ships, account, notify } = useAccount();
     const [shipsToBuy, setShipsToBuy] = useState({});
     const [selectedShip, setSelectedShip] = useState({});
     const [activeTab, setActiveTab] = useState("market");
@@ -33,10 +35,10 @@ export default function Shipyard({ system, waypoint }) {
             setIsLoading(true);
             try {
                 const data = await getShipMarket(account.token, system, waypoint);
-                if (!data) throw new Error("another");
+                if (!data) throw new Error(errorMessage);
                 setShipsToBuy(data);
             } catch(err) {
-                console.error(err);
+                notify(err.message)
             } finally {
                 setIsLoading(false);
             }

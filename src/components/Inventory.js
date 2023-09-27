@@ -19,8 +19,10 @@ const resourcesForRefine = [
     "FUEL"
 ];
 
+const errorMessage = "I missed the part where that's my problem";
+
 export default function Inventory({ ship, waypoint, remainingSeconds }) {
-    const { account, setAccount, setShips } = useAccount();
+    const { account, setAccount, setShips, notify } = useAccount();
 
     const waypointHasMarketplace = waypoint?.traits.find(trait => trait.symbol.includes("MARKETPLACE"));
     const isShipDocked = ship.nav.status ==="DOCKED";
@@ -33,14 +35,14 @@ export default function Inventory({ ship, waypoint, remainingSeconds }) {
         try {
             const data = await refuelShip(account.token, ship.symbol);
 
-            if (!data) throw new Error('eheh');
+            if (!data) throw new Error(errorMessage);
 
             setShips((ships) => ships.map((item) => ship.symbol === item.symbol
             ? {...item, fuel: data.fuel}
             : item));
             setAccount((account) => ({...account, credits: data.agent.credits}));
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 

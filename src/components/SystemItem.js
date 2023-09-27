@@ -5,7 +5,8 @@ import FactionImg from "./FactionImg";
 
 export default function SystemItem({ system }) {
 
-    return <li className="bg-stone-900 rounded-primary">
+    return (
+    <li className="bg-stone-900 rounded-primary">
         <div className="flex-between gap-8 p-4">
             <div className="flex items-center h-16 gap-4">
                 <PlanetImg type={system.type} origin="left"/>
@@ -27,5 +28,5 @@ export default function SystemItem({ system }) {
         {system.waypoints.length
         ? <Planets waypoints={system.waypoints}/>
         : <p className="text-center py-4 text-xl uppercase">it{"'"}s empty here...</p>}
-    </li>
+    </li>)
 }

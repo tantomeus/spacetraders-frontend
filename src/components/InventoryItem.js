@@ -5,22 +5,24 @@ import { useState } from "react";
 import { jettison, refine } from "@/services/api";
 import { useAccount } from "@/context/AccountContext";
 
+const errorMessage = "I missed the part where that's my problem";
+
 export default function InventoryItem({ ship, item, isRefineAvailable }) {
     const [targetedItem, setTargetedItem] = useState("");
     const [amount, setAmount] = useState(0);
-    const { account, setShips } = useAccount();
+    const { account, setShips, notify } = useAccount();
 
     async function handleRefine(resource) {
         try {
             const data = await refine(account.token, ship.symbol, resource);
 
-            if (!data) throw new Error('eheh');
+            if (!data) throw new Error(errorMessage);
 
             setShips((ships) => ships.map((item) => ship.symbol === item.symbol
             ? {...item, fuel: data.fuel}
             : item));
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 

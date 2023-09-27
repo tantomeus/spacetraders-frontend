@@ -9,11 +9,12 @@ import { FaTrashAlt } from "react-icons/fa";
 
 import FactionInfo from "./FactionInfo";
 
+const errorMessage = "I missed the part where that's my problem";
 
 export default function Login({ onClose }) {
     const oldStorage = JSON.parse(localStorage.getItem("agent")) ?? [];
 
-    const { setAccount } = useAccount();
+    const { setAccount, notify } = useAccount();
     const [local, setLocal] = useState(oldStorage);
     const [currentTab, setCurrentTab] = useState("login");
     const [username, setUsername] = useState("");
@@ -31,12 +32,15 @@ export default function Login({ onClose }) {
 
     async function handleSignUp(e) {
         e.preventDefault();
+
+        // if (username.length < 3 || username.length > 10) return;
+
         try {
             const data = await signUp(username, selectedFaction);
 
-            if (!data) throw new Error("login");
+            if (!data) throw new Error(errorMessage);
 
-            const acc = {token: data.token, name: data.agent.symbol, credits: data.agent.credits};
+            const acc = {token: data.token, name: data.agent.symbol, credits: data.agent.credits, headquarters: data.agent.headquarters};
             setAccount(acc);
     
             if (oldStorage?.find((item) => item.name === data.agent.symbol)) return onClose(false);
@@ -46,7 +50,7 @@ export default function Login({ onClose }) {
             setLocal(newStorage);
             onClose(false);
         } catch (err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 
@@ -55,9 +59,9 @@ export default function Login({ onClose }) {
         try {
             const data = await getAgent(token, "agent");
 
-            if (!data) throw new Error("login");
+            if (!data) throw new Error(errorMessage);
 
-            const acc = {token, name: data.symbol, credits: data.credits};
+            const acc = {token, name: data.symbol, credits: data.credits, headquarters: data.headquarters};
             setAccount(acc);
 
             if (oldStorage?.find((item) => item.name === data.symbol)) return onClose(false);
@@ -67,7 +71,7 @@ export default function Login({ onClose }) {
             setLocal(newStorage);
             onClose(false);
         } catch (err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 
@@ -81,15 +85,15 @@ export default function Login({ onClose }) {
     useEffect(() => {
         async function fetchData() {
             try {
-                const data = await getFactions(token)
-                if (!data) throw new Error("login")
+                const data = await getFactions(token);
+                if (!data) throw new Error(errorMessage);
                 setFactions(data.filter(faction => faction.isRecruiting));
             } catch (err) {
-                console.error(err);
+                notify(err.message)
             }
         }
         fetchData();
-    }, [token])
+    }, [token, notify])
 
     return (
     <div className="window w-[30rem]">
@@ -142,14 +146,10 @@ export default function Login({ onClose }) {
         </form>}
 
         {create &&
-        <form
-        onSubmit={handleSignUp}
-        className="flex flex-col gap-8 p-5">
-            <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+        <form onSubmit={handleSignUp} className="flex flex-col gap-8 p-5">
+            <input value={username} onChange={(e) => setUsername(e.target.value)}
             placeholder="Username"
-            className="input py-3"/>
+            className="input py-3 w-full"/>
 
             <div className="flex justify-between gap-2">
                 <select

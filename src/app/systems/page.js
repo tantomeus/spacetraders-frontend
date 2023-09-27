@@ -7,17 +7,21 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import SystemItem from "@/components/SystemItem";
+import SkeletonLoader from "@/components/SkeletonLoader";
 
 const TOTAL = 12000;
 const PER_PAGE = 20;
 const MAX_PAGES = TOTAL / PER_PAGE;
+
+const errorMessage = "I missed the part where that's my problem";
 
 export default function Systems() {
   const [systems, setSystems] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [controlledSystem, setControlledSystem] = useState("");
   const [controlledPage, setControlledPage] = useState(0);
-  const { account } = useAccount();
+  const [isLoading, setIsLoading] = useState(true);
+  const { account, notify } = useAccount();
   const router = useRouter();
 
   function handleChangeInputPage(e) {
@@ -39,19 +43,22 @@ export default function Systems() {
 
   useEffect(() => {
     async function fetchData(page) {
-        const arr = [];
+      setIsLoading(true);
+      const arr = [];
 
-        for (let i = (page - 1) * (PER_PAGE / 20) + 1; i <= page * (PER_PAGE / 20); i++) {
-          arr.push(i);
-        }
+      for (let i = (page - 1) * (PER_PAGE / 20) + 1; i <= page * (PER_PAGE / 20); i++) {
+        arr.push(i);
+      }
 
-        try {
-          const data = await Promise.all(arr.map((item) => getSystems(account.token, item)));
-          if (!data) throw new Error("systems page");
-          setSystems(data.flat(Infinity));
-        } catch (err) {
-          console.error(err);
-        }
+      try {
+        const data = await Promise.all(arr.map((item) => getSystems(account.token, item)));
+        if (!data) throw new Error(errorMessage);
+        setSystems(data.flat(Infinity));
+      } catch (err) {
+        notify(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     }
     fetchData(currentPage);
   }, [account.token, currentPage]);
@@ -83,7 +90,9 @@ export default function Systems() {
     </div>
 
     <ul className="space-y-5">
-      {systems?.map((data) => <SystemItem key={data.symbol} system={data}/>)}
+      {isLoading && ["", "", "", ""].map((_, i) => <SkeletonLoader key={i}/>)}
+
+      {!isLoading && systems?.map((data) => <SystemItem key={data.symbol} system={data}/>)}
     </ul>
 
     {!!systems.length && <div className="flex-between mt-12">

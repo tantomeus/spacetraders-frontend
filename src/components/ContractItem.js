@@ -4,49 +4,86 @@ import { useAccount } from "@/context/AccountContext";
 import { acceptContract } from "@/services/api";
 import { useState } from "react";
 
+const errorMessage = "I missed the part where that's my problem";
+
 export default function ContractItem({ contract, token }) {
-    const [isAccepted, setIsAccepted] = useState(false);
-    const { setAccount } = useAccount();
+    const [isAccepted, setIsAccepted] = useState(contract.accepted);
+    const { setAccount, notify } = useAccount();
 
     function formatDate(date) {
         const formated =  date.split("T")[0].split("-");
         return `${formated[2]}.${formated[1]}.${formated[0]}`;
     }
 
-    async function handleAccept(token, contract) {
-        const data = await acceptContract(token, contract);
-        setAccount((account) => ({...account, credits: data.agent.credits}));
-        setIsAccepted(true);
+    async function handleAccept(type) {
+        try {
+            const data = await acceptContract(token, contract.id, type);
+            if (!data) throw new Error(errorMessage);
+            setAccount((account) => ({...account, credits: data.agent.credits}));
+            setIsAccepted(true);
+        } catch(err) {
+            notify(err.message);
+        }
     }
 
-    return <li className="bg-stone-900 p-5 rounded-3xl">
+    return (
+    <li className="bg-stone-900 p-5 rounded-3xl">
         <div className="flex items-center">
-            <div className="grow">
-                <hr className="opacity-50"/>
-            </div>
+            <hr className="opacity-50 grow"/>
             <h2 className="px-3 text-xl font-semibold">{contract.type}</h2>
-            <div className="grow">
-                <hr className="opacity-50"/>
+            <hr className="opacity-50 grow"/>
+        </div>
+
+        <div className="grid grid-cols-2 gap-y-3 mt-3 uppercase">
+            <div>
+                <h3 className="text-xs opacity-50">trade</h3>
+                <span>{contract.terms.deliver[0].tradeSymbol.replaceAll("_", " ")}</span>
+            </div>
+
+            <div>
+                <h3 className="text-xs opacity-50">destination</h3>
+                <span>{contract.terms.deliver[0].destinationSymbol}</span>
+            </div>
+            
+            {(contract.accepted || isAccepted) && <>
+            <div>
+                <h3 className="text-xs opacity-50">units require</h3>
+                <span>{contract.terms.deliver[0].unitsRequired}</span>
+            </div>
+
+            <div>
+                <h3 className="text-xs opacity-50">units fulfilled</h3>
+                <span>{contract.terms.deliver[0].unitsFulfilled}</span>
+            </div>
+            </>}
+
+            <div>
+                <h3 className="text-xs opacity-50">accept</h3>
+                <span>{contract.terms.payment.onAccepted} credits</span>
+            </div>
+
+            <div>
+                <h3 className="text-xs opacity-50">fulfill</h3>
+                <span>{contract.terms.payment.onFulfilled} credits</span>
             </div>
         </div>
-        <div className="grid grid-cols-2 gap-y-3 mt-3 uppercase">
-            <div><h3 className="text-xs opacity-50">trade</h3>{contract.terms.deliver[0].tradeSymbol.replaceAll("_", " ")}</div>
-            <div><h3 className="text-xs opacity-50">destination</h3>{contract.terms.deliver[0].destinationSymbol}</div>
-            
-            {
-            contract.accepted || isAccepted && <>
-            <div><h3 className="text-xs opacity-50">units require</h3>{contract.terms.deliver[0].unitsRequired}</div>
-            <div><h3 className="text-xs opacity-50">units fulfilled</h3>{contract.terms.deliver[0].unitsFulfilled}</div>
-            </>
-            }
 
-            <div><h3 className="text-xs opacity-50">accept</h3>{contract.terms.payment.onAccepted} credits</div>
-            <div><h3 className="text-xs opacity-50">fulfill</h3>{contract.terms.payment.onFulfilled} credits</div>
+        <div className="flex items-center gap-3">
+            <div>{contract.accepted || isAccepted
+            ? formatDate(contract.terms.deadline)
+            : formatDate(contract.expiration)}</div>
+
+            <hr className="opacity-50 grow"/>
+
+            {contract.accepted || isAccepted
+            ? <button disabled={!contract.fulfilled} onClick={() => handleAccept("fulfill")}
+            className={`btn ${contract.fulfilled ? "btn-color hover:btn-color-reversed" : "disable-color"} text-xl`}>
+                fulfill
+            </button>
+            : <button onClick={() => handleAccept("accept")}
+            className="btn btn-color hover:btn-color-reversed text-xl">
+                Accept
+            </button>}
         </div>
-        <div className="flex items-center">
-            <div>{contract.accepted || isAccepted ? formatDate(contract.terms.deadline) : formatDate(contract.expiration)}</div>
-            <div className="grow px-3"><hr className="opacity-50"/></div>
-            {contract.accepted || isAccepted ? <span className="text-amber-600 text-xl p-2">&#10003; accepted</span> : <button onClick={() => handleAccept(token, contract.id)} className="btn-color hover:btn-color-hover text-xl">Accept</button>}
-        </div>
-    </li>
+    </li>)
 }
