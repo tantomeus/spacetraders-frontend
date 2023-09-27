@@ -8,17 +8,22 @@ import { shorten } from "@/helpers/helpers";
 
 import ShipImg from "./ShipImg";
 
+const errorMessage = "I missed the part where that's my problem";
+
 export default function ShipyardItem({ ship, waypoint }) {
-    const { account, setAccount } = useAccount();
+    const { account, setAccount, fetchShipsData, notify } = useAccount();
     const [descriptionHidden, setDescriptionHidden] = useState(true);
+
+    const haveEnoughCredits = ship.purchasePrice <= account.credits;
 
     async function handlePurchase(token, type, waypoint) {
         try {
             const data = await purchaseShip(token, type, waypoint);
-            if (!data) throw new Error("heh");
+            if (!data) throw new Error(errorMessage);
             setAccount((acc) => ({...acc, credits: data.agent.credits}));
+            fetchShipsData(account.token);
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 
@@ -80,8 +85,13 @@ export default function ShipyardItem({ ship, waypoint }) {
                 </span>
                 <hr className="block grow opacity-50"/>
                 <button
+                disabled={!haveEnoughCredits}
                 onClick={() => handlePurchase(account.token, ship.type, waypoint)}
-                className="btn btn-color hover:btn-color-reversed text-xs/[1rem]">PURCHASE</button>
+                className={`btn ${haveEnoughCredits
+                ? "btn-color hover:btn-color-reversed"
+                : "disable-color"} text-xs/[1rem]`}>
+                    PURCHASE
+                </button>
             </div>
         </div>
     </li>)
