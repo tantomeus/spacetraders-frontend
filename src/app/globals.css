@@ -48,7 +48,7 @@
     }
 
     .h-overflow {
-      @apply max-h-[60vh] overflow-y-auto overflow-x-hidden;
+      @apply h-[60vh] overflow-y-auto overflow-x-hidden;
     }
 
     .white-border {
@@ -69,10 +69,6 @@
 
     .rounded-primary {
       @apply rounded-md;
-    }
-
-    .dropdown-item {
-      @apply text-xs text-left p-3 hover:bg-stone-600;
     }
 }
 

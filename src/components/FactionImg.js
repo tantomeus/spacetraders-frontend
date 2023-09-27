@@ -1,4 +1,4 @@
-export default function FactionImg({ faction, className }) {
+export default function FactionImg({ faction, className = "" }) {
 
     function img(symbol) {
         switch(symbol) {
