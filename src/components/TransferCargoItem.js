@@ -6,10 +6,12 @@ import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
 import { transferCargo } from "@/services/api";
 import { useAccount } from "@/context/AccountContext";
 
+const errorMessage = "I missed the part where that's my problem";
+
 export default function TransferCargoItem({ ship, direction = "left", secondShip, setSelectedShip }) {
     const [amount, setAmount] = useState(0);
     const [selected, setSelected] = useState({});
-    const { account, ships, setShips } = useAccount();
+    const { account, ships, setShips, notify } = useAccount();
 
     const isLimitExceeded = secondShip.cargo.units + amount <= secondShip.cargo.capacity;
     const isTransitAllowed = amount && Object.keys(selected) && isLimitExceeded;
@@ -45,7 +47,7 @@ export default function TransferCargoItem({ ship, direction = "left", secondShip
     async function handleTransfer() {
         try {
             const data = await transferCargo(account.token, ship.symbol, secondShip.symbol, selected.symbol, amount);
-            if (!data) throw new Error("Error, huh")
+            if (!data) throw new Error(errorMessage)
             setShips((ships) => ships.map((item) => {
                 if (ship.symbol === item.symbol) return {...item, cargo: data.cargo};
                 if (secondShip.symbol === item.symbol) return setCargoSelected(item);
@@ -53,7 +55,7 @@ export default function TransferCargoItem({ ship, direction = "left", secondShip
             }));
             setAmount(0);
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 

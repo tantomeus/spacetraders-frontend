@@ -27,13 +27,15 @@ export default function TransferCargo({ ship }) {
         </div>}
 
         {!selectedShip.symbol && !!availableShips.length && 
-            <ul className="h-overflow p-4 text-xs grid grid-cols-2 gap-4">
+            <ul className="h-overflow p-4 text-xs items-start grid grid-cols-2 gap-4">
                 {availableShips.map(item => 
-                <SelectShip key={item.symbol} ship={item} onSelect={setSelectedShip}/>)}
+                <SelectShip key={item.symbol} ship={item} onSelect={setSelectedShip}>
+                    {ship.cargo.units}/{ship.cargo.capacity}
+                </SelectShip>)}
             </ul>
         }
 
-        {selectedShip.symbol && <div className="grid grid-cols-[1fr_2rem_1fr]">
+        {selectedShip.symbol && <div className="grid items-start grid-cols-[1fr_2rem_1fr]">
             <TransferCargoItem setSelectedShip={setSelectedShip} ship={ship} secondShip={selectedShip}/>
             <span></span>
             <TransferCargoItem setSelectedShip={setSelectedShip} ship={selectedShip} secondShip={ship}

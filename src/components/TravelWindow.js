@@ -5,8 +5,10 @@ import { flyToWaypoint, switchFlightMode, warpOrJump } from "@/services/api"
 import { useState } from "react";
 import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 
+const errorMessage = "I missed the part where that's my problem";
+
 export default function TravelWindow({ waypoints, ship, onNavigation }) {
-    const { account, setShips, fetchShipsData } = useAccount();
+    const { account, setShips, fetchShipsData, notify } = useAccount();
     const [controlledWaypoint, setControlledWaypoint] = useState("");
     const [translateX, setTranslateX] = useState("0%");
 
@@ -33,11 +35,11 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
         try {
             const data = await switchFlightMode(token, ship, mode);
 
-            if (!data) throw new Error("error!");
+            if (!data) throw new Error(errorMessage);
 
-            setShips((ships) => ships.map((item) => item.symbol === ship ? {...item, nav: data.nav} : item));
+            setShips((ships) => ships.map((item) => item.symbol === ship ? {...item, nav: data} : item));
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 
@@ -48,12 +50,12 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
             if (type) data = await warpOrJump(token, ship, destination, type);
             else data = await flyToWaypoint(token, ship, destination);
 
-            if (!data) throw new Error("another error");
+            if (!data) throw new Error(errorMessage);
             
             onNavigation(false);
             fetchShipsData(token);
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 
