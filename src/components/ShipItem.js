@@ -14,6 +14,7 @@ import Inventory from "./Inventory";
 import Mining from "./Mining";
 import TransferCargo from "./TransferCargo";
 import Dropdown from "./Dropdown";
+import Trade from "./Trade";
 
 const errorMessage = "I missed the part where that's my problem";
 
@@ -27,16 +28,18 @@ export default function ShipItem({ ship, system }) {
     const [secondsMine, setSecondsMine] = useState(remainingMine);
 
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
-    // travel, flightInfo, inventory, mining, transfer
+    // travel, flightInfo, inventory, mining, transfer, deliver
     const [openedWindow, setOpenedWindow] = useState("");
-    const { account, setShips, fetchShipsData, notify } = useAccount();
+    const { account, setShips, fetchShipsData, notify, contracts} = useAccount();
     const ref = useRef(null);
 
     const waypoint = system?.find((waypoint) => ship.nav.waypointSymbol === waypoint.symbol);
-    const waypointiSHeadquarter = waypoint.symbol === account.headquarters;
     const status = ship.nav.status;
     const shipHasMineModule = ship.modules.find(module => module.symbol.includes("MINERAL"));
     const canCarryCargo = ship.cargo.capacity > 0;
+    const contract = contracts?.[0]
+    const hasContractCargo =  ship.cargo.inventory?.find(item => item.symbol === contract.terms.deliver[0].tradeSymbol);
+    const isContractTermsComplied = contract.accepted && hasContractCargo && ship.nav.waypointSymbol === contract.terms.deliver[0].destinationSymbol;
 
     function handleToggleDropdown() {
         setIsDropDownOpen((value) => !value);
@@ -170,8 +173,18 @@ export default function ShipItem({ ship, system }) {
                 {name: "Travel", handler: () => handleOpenWindow("travel")},
                 {name: canCarryCargo && shipHasMineModule ? "Mine" : "", handler: () => handleOpenWindow("mining")},
                 {name: canCarryCargo ? "Transfer" : "", handler: () => handleOpenWindow("transfer")},
+                {name: canCarryCargo && isContractTermsComplied ? "Deliver" : "", handler: () => handleOpenWindow("deliver")},
             ]}/>}
         </div>
+
+        {openedWindow === "deliver" && createPortal(<>
+            <Trade heading="Deliver"
+            selectedGoods={{name: hasContractCargo.name, symbol: hasContractCargo.symbol, tradeVolume: hasContractCargo.units}}
+            selectedShip={ship}
+            setSelectedGoods={setOpenedWindow}
+            status="deliver"/>
+            <Overlay onClose={setOpenedWindow}/>
+        </>, document.body)}
 
         {openedWindow === "travel" && createPortal(<>
             <TravelWindow onNavigation={setOpenedWindow} ship={ship} waypoints={system}/>

@@ -74,7 +74,7 @@ export async function getSystems(token, page = 1) {
   };
   
   const res = await fetch(`${BASE_URL}/systems?limit=20&page=${page}`, options);
-  const data = await res.json();
+  const { data } = await res.json();
   console.log(data)
   return data;
 }
@@ -107,7 +107,7 @@ export async function getContracts(token) {
   return data;
 }
 
-export async function acceptContract(token, id) {
+export async function acceptContract(token, id, type = "accept") {
   const options = {
     method: "POST",
     headers: {
@@ -116,11 +116,33 @@ export async function acceptContract(token, id) {
     },
   };
   
-  const res = await fetch(`${BASE_URL}/my/contracts/${id}/accept`, options);
+  const res = await fetch(`${BASE_URL}/my/contracts/${id}/${type}`, options);
   const { data } = await res.json();
   console.log(data)
   return data;
 }
+
+
+export async function deliverCargo(token, id, ship, item, units) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      shipSymbol: ship,
+      tradeSymbol: item,
+      units
+    })
+  };
+  
+  const res = await fetch(`${BASE_URL}/my/contracts/${id}/deliver`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
 
 export async function getShips(token) {
   const options = {
@@ -190,7 +212,6 @@ export async function jettison(token, ship, resource, units) {
 }
 
 export async function transferCargo(token, ship, secondShip, cargo, units) {
-  console.log(ship, resource, units)
   const options = {
     method: "POST",
     headers: {
@@ -315,6 +336,24 @@ export async function mineAsteroid(token, ship) {
   return data;
 }
 
+export async function installMount(token, ship, symbol) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      symbol,
+    }),
+  };
+  
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/mounts/install`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
 
 // TRADE
 
@@ -383,6 +422,22 @@ export async function purchaseShip(token, type, waypoint) {
   };
   
   const res = await fetch(`${BASE_URL}/my/ships`, options);
+  const { data } = await res.json();
+  console.log(data)
+  return data;
+}
+
+
+export async function negotiateContract(token, ship) {
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    }
+  };
+  
+  const res = await fetch(`${BASE_URL}/my/ships/${ship}/negotiate/contract`, options);
   const { data } = await res.json();
   console.log(data)
   return data;

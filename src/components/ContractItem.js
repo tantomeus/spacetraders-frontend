@@ -2,13 +2,11 @@
 
 import { useAccount } from "@/context/AccountContext";
 import { acceptContract } from "@/services/api";
-import { useState } from "react";
 
 const errorMessage = "I missed the part where that's my problem";
 
 export default function ContractItem({ contract, token }) {
-    const [isAccepted, setIsAccepted] = useState(contract.accepted);
-    const { setAccount, notify } = useAccount();
+    const { setAccount, notify, fetchContracts } = useAccount();
 
     function formatDate(date) {
         const formated =  date.split("T")[0].split("-");
@@ -20,7 +18,7 @@ export default function ContractItem({ contract, token }) {
             const data = await acceptContract(token, contract.id, type);
             if (!data) throw new Error(errorMessage);
             setAccount((account) => ({...account, credits: data.agent.credits}));
-            setIsAccepted(true);
+            fetchContracts(token);
         } catch(err) {
             notify(err.message);
         }
@@ -45,7 +43,7 @@ export default function ContractItem({ contract, token }) {
                 <span>{contract.terms.deliver[0].destinationSymbol}</span>
             </div>
             
-            {(contract.accepted || isAccepted) && <>
+            {contract.accepted && <>
             <div>
                 <h3 className="text-xs opacity-50">units require</h3>
                 <span>{contract.terms.deliver[0].unitsRequired}</span>
@@ -69,13 +67,13 @@ export default function ContractItem({ contract, token }) {
         </div>
 
         <div className="flex items-center gap-3">
-            <div>{contract.accepted || isAccepted
+            <div>{contract.accepted
             ? formatDate(contract.terms.deadline)
             : formatDate(contract.expiration)}</div>
 
             <hr className="opacity-50 grow"/>
 
-            {contract.accepted || isAccepted
+            {contract.accepted
             ? <button disabled={!contract.fulfilled} onClick={() => handleAccept("fulfill")}
             className={`btn ${contract.fulfilled ? "btn-color hover:btn-color-reversed" : "disable-color"} text-xl`}>
                 fulfill
