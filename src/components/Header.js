@@ -5,14 +5,11 @@ import { useAccount } from "@/context/AccountContext";
 import { shorten } from "@/helpers/helpers";
 import { createPortal } from "react-dom";
 
-import Image from "next/image";
-import Link from "next/link";
 import Login from "./Login";
 import AccountInfo from "./AccountInfo";
 import Overlay from "./Overlay";
 import Dropdown from "./Dropdown";
-
-const pages = ["Fleet", "Systems", "Contracts", "Guide"];
+import Nav from "./Nav";
 
 export default function Header() {
     const { account } = useAccount();
@@ -50,19 +47,8 @@ export default function Header() {
 
     return (
     <header className="mb-5 bg-stone-900 flex-between text-stone-100 px-10">
-        <div className="flex items-center gap-14">
-            <Image src="/logo.svg" height={68}  width={68} alt="logo" className="scale-90"/>
 
-            <nav className="flex">
-                {pages.map(page => 
-                <Link
-                key={page}
-                href={`/${page.toLowerCase()}`}
-                className="text-xl item-hover-color px-4 py-2 rounded-primary">
-                    {page}
-                </Link>)}
-            </nav>
-        </div>
+        <Nav/>
 
         <div className="flex items-center space-x-4">
             <span className="credits rounded-3xl py-2 px-4 text-xl">{shorten(account.credits)} credits</span>
