@@ -1,11 +1,11 @@
 import { useAccount } from "@/context/AccountContext";
-import { trade } from "@/services/api";
+import { deliverCargo, trade } from "@/services/api";
 import BackButton from "./BackButton";
 import { useState } from "react";
 
 export default function Trade({ heading, selectedGoods, selectedShip, setSelectedShip, setSelectedGoods, status }) {
     const [amount, setAmount] = useState(0);
-    const { setAccount, account, notify, setShips } = useAccount();
+    const { setAccount, account, notify, setShips, fetchContracts, contracts } = useAccount();
 
     async function handleTrade() {
         try {
@@ -33,6 +33,54 @@ export default function Trade({ heading, selectedGoods, selectedShip, setSelecte
             setAmount(min);
         }
     }
+
+    async function handleDeliver() {
+        const data = await deliverCargo(account.token, contracts[0].id, selectedShip.symbol,  selectedGoods.symbol, amount);
+        fetchContracts(account.token);
+        setShips((ships) => ships.map((ship) => ship.symbol === selectedShip.symbol
+        ? {...ship, cargo: data.cargo}
+        : ship));
+        setSelectedGoods("");
+    }
+
+    if (status === "deliver") {
+        const unitsLeft = contracts[0].terms.deliver[0].unitsRequired - contracts[0].terms.deliver[0].unitsFulfilled;
+
+        function handleInputChangeDeliver(e) {
+            if (!isNaN(+e.target.value)) setAmount(+(e.target.value));
+            if (e.target.value > unitsLeft) setAmount(unitsLeft);
+            if (e.target.value > selectedGoods.tradeVolume) setAmount(selectedGoods.tradeVolume);
+        }
+
+        return (
+        <div className="window window-divide w-[30rem]">
+            <div className="flex-between px-6 py-4 text-2xl">
+                <h2>{heading}</h2>
+            </div>
+
+            <div className="p-4">
+                <div className="flex-between bg-stone-700 px-4 py-2 rounded-primary">
+                    <div>
+                        <span className="block">{selectedGoods.name}</span>
+                        <span className="block">{selectedGoods.tradeVolume} Available to {status}</span>
+                    </div>
+                    <span>{unitsLeft} units left</span>
+                </div>
+
+                <div className="mt-4">
+                    <input value={amount} onChange={handleInputChangeDeliver} placeholder="Amount"
+                    className="grow input py-3 w-full"/>
+                </div>
+            </div>
+
+            <div className="flex justify-between px-4 py-4">
+                <button onClick={handleDeliver}
+                className="btn btn-color hover:btn-color-reversed">
+                    deliver {amount} units
+                </button>
+            </div>
+        </div>
+    )}
 
     return (
         <div className="window window-divide w-[30rem]">

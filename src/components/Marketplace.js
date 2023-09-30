@@ -9,52 +9,22 @@ import MarketplaceItem from "./MarketplaceItem";
 import SelectShip from "./SelectShip";
 import BackButton from "./BackButton";
 import SkeletonLoader from "./SkeletonLoader";
+import Trade from "./Trade";
 
 const errorMessage = "I missed the part where that's my problem";
 
 export default function Marketplace({ system, waypoint, ships }) {
-    const { account, setAccount, setShips, notify } = useAccount();
+    const { account, notify } = useAccount();
     const [status, setStatus] = useState(""); // purchase, sell
     const [goods, setGoods] = useState({});
     const [selectedShip, setSelectedShip] = useState({});
     const [selectedGoods, setSelectedGoods] = useState({});
-    const [amount, setAmount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
     const availableShips = ships.filter(ship => ship.cargo.capacity && ship.nav.status === "DOCKED")
 
     function reset() {
         setSelectedGoods({});
-        setAmount(0);
-    }
-
-    async function handleTrade() {
-        try {
-            const data = await trade(account.token, selectedShip.symbol, selectedGoods.symbol, amount, status);
-
-            if (!data) throw new Error(errorMessage);
-
-            setAccount((account) => ({...account, credits: data.agent.credits}));
-            setSelectedShip((ship) => ({...ship, cargo: data.cargo}));
-            setShips((ships) => ships.map((ship) => ship.symbol === selectedShip.symbol
-            ? {...ship, cargo: data.cargo}
-            : ship));
-            reset();
-        } catch (err) {
-            notify(err.message);
-        }
-    }
-
-    function handleInputChange(e) {
-        const space = status === "sell"
-        ? selectedGoods.tradeVolume
-        : selectedShip.cargo.capacity - selectedShip.cargo.units ;
-        const min = Math.floor(Math.min((account.credits / selectedGoods.purchasePrice), space));
-        
-        if (!isNaN(+e.target.value)) setAmount(+(e.target.value));
-        if (e.target.value * selectedGoods.purchasePrice > account.credits || e.target.value > space) {
-            setAmount(min);
-        }
     }
 
     function handleSelect(item, type) {
@@ -77,37 +47,17 @@ export default function Marketplace({ system, waypoint, ships }) {
         }
         fetchData();
     }, [account.token, system, waypoint, notify]);
-    
+
+
     if (selectedGoods.symbol) return (
-        <div className="window window-divide w-[30rem]">
-            <div className="flex-between px-6 py-4 text-2xl">
-                <h2>Marketplace</h2>
-            </div>
+        <Trade heading="Marketplace"
+        selectedGoods={selectedGoods}
+        selectedShip={selectedShip}
+        setSelectedShip={setSelectedShip}
+        setSelectedGoods={setSelectedGoods}
+        status={status}/>
+    )
 
-            <div className="p-4">
-                <div className="flex-between bg-stone-700 px-4 py-2 rounded-primary">
-                    <div>
-                        <span className="block">{selectedGoods.name}</span>
-                        <span className="block">{selectedGoods.tradeVolume} Available to {status}</span>
-                    </div>
-                    <span>{selectedGoods.price} CREDITS</span>
-                </div>
-
-                <div className="mt-4">
-                    <input value={amount} onChange={handleInputChange} placeholder="Amount"
-                    className="grow input py-3 w-full"/>
-                </div>
-            </div>
-
-            <div className="flex justify-between px-4 py-4">
-                <BackButton onClick={reset}/>
-                <button onClick={handleTrade}
-                className="btn btn-color hover:btn-color-reversed">
-                    {status} FOR {amount * selectedGoods.price} CREDITS
-                </button>
-            </div>
-        </div>
-    );
 
     return <div className="window window-divide w-[60rem]">
         <div className="flex-between px-6 py-4 text-2xl">
@@ -145,6 +95,9 @@ export default function Marketplace({ system, waypoint, ships }) {
         </ul>
         : <p className="uppercase py-8 text-center text-xl">There are no docked ships with a cargo module</p>}
 
-        {selectedShip.symbol && <BackButton onClick={reset}/>}
+        {selectedShip.symbol && <BackButton onClick={() => {
+            setSelectedShip({});
+            reset()}}/>
+        }
     </div>
 }
