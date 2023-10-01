@@ -1,33 +1,35 @@
 "use client";
 
-import { getContracts, getShips } from "@/services/api";
+import { getContracts } from "@/services/contracts";
+import { getShips } from "@/services/fleet";
 import { createContext, useState, useContext, useEffect } from "react";
 import { toast } from 'react-toastify';
+
+import Login from "@/components/Login";
 
 const AccountContext = createContext();
 
 export default function AccountProvider({ children }) {
-    const [account, setAccount] = useState({});
+    const [account, setAccount] = useState({
+    });
     const [ships, setShips] = useState([]);
     const [contracts, setContracts] = useState([]); 
 
     async function fetchShipsData(token) {
         try {
             const data = await getShips(token);
-            if (!data) throw new Error("that's error maan");
             setShips(data);
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 
     async function fetchContracts(token) {
         try {
             const data = await getContracts(token);
-            if (!data) throw new Error("that's error maan");
             setContracts(data);
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 
@@ -38,14 +40,17 @@ export default function AccountProvider({ children }) {
         });
     };
 
-    useEffect(() => { 
-        fetchShipsData(account.token);
-        fetchContracts(account.token);
+    useEffect(() => {
+        if (account.token) {
+            fetchShipsData(account.token);
+            fetchContracts(account.token);
+        }
       }, [account.token, setShips]);
 
     return <AccountContext.Provider 
-        value={{account, setAccount, ships, setShips, fetchShipsData, fetchContracts, notify, contracts}}>
-        {children}
+    value={{account, setAccount, ships, setShips, fetchShipsData, fetchContracts, notify, contracts}}>
+        {!account.token && <><Login/><div className="z-[500] absolute bg-stone-950 inset-0"></div></>}
+        {account.token && children}
     </AccountContext.Provider>
 }
 

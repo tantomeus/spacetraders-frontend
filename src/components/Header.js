@@ -5,14 +5,13 @@ import { useAccount } from "@/context/AccountContext";
 import { shorten } from "@/helpers/helpers";
 import { createPortal } from "react-dom";
 
-import Login from "./Login";
 import AccountInfo from "./AccountInfo";
 import Overlay from "./Overlay";
 import Dropdown from "./Dropdown";
 import Nav from "./Nav";
 
 export default function Header() {
-    const { account } = useAccount();
+    const { account, setAccount } = useAccount();
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
     const [openedWindow, setOpenedWindow] = useState(""); // accountInfo, login
 
@@ -28,7 +27,7 @@ export default function Header() {
     }
 
     function handleOpenLogin() {
-        setOpenedWindow("login");
+        setAccount({});
         setIsDropDownOpen(false);
     }
 
@@ -71,10 +70,5 @@ export default function Header() {
             <Overlay onClose={setOpenedWindow}/>
         </>, document.body)
         }
-
-        {(!Object.keys(account).length || openedWindow === "login") && createPortal(<>
-            <Login onClose={setOpenedWindow}/>
-            <div className="z-[500] absolute bg-stone-950 inset-0"></div>
-        </>,document.body)}
     </header>)
 }
