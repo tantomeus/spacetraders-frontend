@@ -21,11 +21,11 @@ export default function SystemItem({ system }) {
         
         <div className="flex items-center uppercase text-xl">
             <hr className="grow opacity-50"/>
-            {system.factions.length ? <FactionImg faction={system.factions[0]?.symbol}/> : ""}
+            {system.factions?.length ? <FactionImg faction={system.factions[0]?.symbol}/> : ""}
             <hr className="grow opacity-50"/>
         </div>
 
-        {system.waypoints.length
+        {system.waypoints?.length
         ? <Planets waypoints={system.waypoints}/>
         : <p className="text-center py-4 text-xl uppercase">it{"'"}s empty here...</p>}
     </li>)

@@ -2,27 +2,33 @@
 
 import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 import { useAccount } from "@/context/AccountContext";
-import { getSystems } from "@/services/api";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { getSystems } from "@/services/systems";
+import { useQuery } from "@tanstack/react-query";
 
 import SystemItem from "@/components/SystemItem";
 import SkeletonLoader from "@/components/SkeletonLoader";
 
 const TOTAL = 12000;
-const PER_PAGE = 20;
+const PER_PAGE = 60;
 const MAX_PAGES = TOTAL / PER_PAGE;
 
-const errorMessage = "I missed the part where that's my problem";
-
 export default function Systems() {
-  const [systems, setSystems] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [controlledSystem, setControlledSystem] = useState("");
   const [controlledPage, setControlledPage] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const { account, notify } = useAccount();
   const router = useRouter();
+
+  async function fetchSystems(page) {
+    const arr = [];
+    for (let i = (page - 1) * (PER_PAGE / 20) + 1; i <= page * (PER_PAGE / 20); i++) {
+      arr.push(i);
+    }
+    const data = await Promise.all(arr.map((item) => getSystems(account.token, item)));
+    return data.flat(Infinity);
+  }
 
   function handleChangeInputPage(e) {
     if (e.target.value <= 0) return setControlledPage(0);
@@ -41,27 +47,13 @@ export default function Systems() {
     router.push(`systems/${controlledSystem}`);
   }
 
-  useEffect(() => {
-    async function fetchData(page) {
-      setIsLoading(true);
-      const arr = [];
+  const { isLoading, isError, data: systems = [], error } = useQuery({
+    queryKey: [`systemsData/${currentPage}`],
+    queryFn: () =>  fetchSystems(currentPage),
+  });
 
-      for (let i = (page - 1) * (PER_PAGE / 20) + 1; i <= page * (PER_PAGE / 20); i++) {
-        arr.push(i);
-      }
+  if (isError) notify(error.message);
 
-      try {
-        const data = await Promise.all(arr.map((item) => getSystems(account.token, item)));
-        if (!data) throw new Error(errorMessage);
-        setSystems(data.flat(Infinity));
-      } catch (err) {
-        notify(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData(currentPage);
-  }, [account.token, currentPage]);
 
   return <section>
     <div className="uppercase flex gap-4 mb-2">
@@ -81,7 +73,7 @@ export default function Systems() {
         <form className="ml-auto" onSubmit={handleSubmitSystem}>
           <label>
             <span>Find a system: </span>
-            <input onChange={(e) => setControlledSystem(e.target.value)}
+            <input onChange={(e) => setControlledSystem(e.target.value.toUpperCase())}
             value={controlledSystem}
             className="input w-28 text-center"/>
           </label>

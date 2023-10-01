@@ -1,8 +1,9 @@
 import { useState } from "react";
+
 import PlanetImg from "./PlanetImg";
 import WaypointInfo from "./WaypointInfo";
 
-export default function Planets({ waypoints = [], className = "", icons = false }) {
+export default function Planets({ waypoints = [], className = "" }) {
     const [openedWaypoint, setOpenedWaypoint] = useState("");
 
     return (
@@ -16,9 +17,7 @@ export default function Planets({ waypoints = [], className = "", icons = false 
             key={waypoint.symbol}>
                 <PlanetImg type={waypoint.type}/>
                 <span className="text-[0.6rem] mt-4">{waypoint.symbol}</span>
-
                 {openedWaypoint === waypoint.symbol && waypoint.traits && <WaypointInfo waypoint={waypoint}/>}
-
             </li>
         })}
     </ul>)

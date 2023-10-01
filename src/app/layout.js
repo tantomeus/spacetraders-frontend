@@ -27,15 +27,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`font-speedy relative text-stone-50 bg-stone-950`}>
-        <AccountProvider>
-            <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <AccountProvider>
               <Header/>
               <main className="max-w-7xl mx-auto min-h-[80vh]">
                 {children}
               </main>
               <Footer/>
-            </QueryClientProvider>
-        </AccountProvider>
+          </AccountProvider>
+        </QueryClientProvider>
         <ToastContainer theme="dark"/>
       </body>
     </html>

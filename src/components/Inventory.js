@@ -1,9 +1,9 @@
 "use client";
 
-import { refuelShip } from "@/services/api";
 import { BsFillFuelPumpFill } from "react-icons/bs";
 import { useAccount } from "@/context/AccountContext";
 import { convertSeconds } from "@/helpers/helpers";
+import { refuelShip } from "@/services/fleet";
 
 import InventoryItem from "./InventoryItem";
 
@@ -19,8 +19,6 @@ const resourcesForRefine = [
     "FUEL"
 ];
 
-const errorMessage = "I missed the part where that's my problem";
-
 export default function Inventory({ ship, waypoint, remainingSeconds }) {
     const { account, setAccount, setShips, notify } = useAccount();
 
@@ -34,9 +32,6 @@ export default function Inventory({ ship, waypoint, remainingSeconds }) {
     async function handleRefuel() {
         try {
             const data = await refuelShip(account.token, ship.symbol);
-
-            if (!data) throw new Error(errorMessage);
-
             setShips((ships) => ships.map((item) => ship.symbol === item.symbol
             ? {...item, fuel: data.fuel}
             : item));

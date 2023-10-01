@@ -1,10 +1,10 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { purchaseShip } from "@/services/api";
 import { useState } from "react";
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai"
 import { shorten } from "@/helpers/helpers";
+import { purchaseShip } from "@/services/trading";
 
 import ShipImg from "./ShipImg";
 
@@ -19,7 +19,6 @@ export default function ShipyardItem({ ship, waypoint }) {
     async function handlePurchase(token, type, waypoint) {
         try {
             const data = await purchaseShip(token, type, waypoint);
-            if (!data) throw new Error(errorMessage);
             setAccount((acc) => ({...acc, credits: data.agent.credits}));
             fetchShipsData(account.token);
         } catch(err) {

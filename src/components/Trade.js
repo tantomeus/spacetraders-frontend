@@ -1,7 +1,9 @@
 import { useAccount } from "@/context/AccountContext";
-import { deliverCargo, trade } from "@/services/api";
-import BackButton from "./BackButton";
 import { useState } from "react";
+import { deliverCargo } from "@/services/fleet";
+import { trade } from "@/services/trading";
+
+import BackButton from "./BackButton";
 
 export default function Trade({ heading, selectedGoods, selectedShip, setSelectedShip, setSelectedGoods, status }) {
     const [amount, setAmount] = useState(0);
@@ -10,7 +12,6 @@ export default function Trade({ heading, selectedGoods, selectedShip, setSelecte
     async function handleTrade() {
         try {
             const data = await trade(account.token, selectedShip.symbol, selectedGoods.symbol, amount, status);
-            if (!data) throw new Error(errorMessage);
             setAccount((account) => ({...account, credits: data.agent.credits}));
             setSelectedShip((ship) => ({...ship, cargo: data.cargo}));
             setShips((ships) => ships.map((ship) => ship.symbol === selectedShip.symbol
@@ -35,12 +36,16 @@ export default function Trade({ heading, selectedGoods, selectedShip, setSelecte
     }
 
     async function handleDeliver() {
-        const data = await deliverCargo(account.token, contracts[0].id, selectedShip.symbol,  selectedGoods.symbol, amount);
-        fetchContracts(account.token);
-        setShips((ships) => ships.map((ship) => ship.symbol === selectedShip.symbol
-        ? {...ship, cargo: data.cargo}
-        : ship));
-        setSelectedGoods("");
+        try {
+            const data = await deliverCargo(account.token, contracts[0].id, selectedShip.symbol,  selectedGoods.symbol, amount);
+            fetchContracts(account.token);
+            setShips((ships) => ships.map((ship) => ship.symbol === selectedShip.symbol
+            ? {...ship, cargo: data.cargo}
+            : ship));
+            setSelectedGoods("");
+        } catch(err) {
+            notify(err.message);
+        }
     }
 
     if (status === "deliver") {

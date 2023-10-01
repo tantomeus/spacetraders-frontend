@@ -1,54 +1,52 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { getAgent, getFactions, signUp } from "@/services/api";
-import { useEffect, useState } from "react";
+import { getAgent, signUp } from "@/services/agent";
+import { getFactions } from "@/services/factions";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { FaTrashAlt } from "react-icons/fa";
+import { useQuery } from "@tanstack/react-query";
 
 import FactionInfo from "./FactionInfo";
 
-const errorMessage = "I missed the part where that's my problem";
-
-export default function Login({ onClose }) {
+export default function Login() {
     const oldStorage = JSON.parse(localStorage.getItem("agent")) ?? [];
 
     const { setAccount, notify } = useAccount();
     const [local, setLocal] = useState(oldStorage);
     const [currentTab, setCurrentTab] = useState("login");
     const [username, setUsername] = useState("");
-    const [factions, setFactions] = useState([]);
     const [selectedFaction, setSelectedFaction] = useState("COSMIC")
     const [token, setToken] = useState("");
     const [isFactionInfoOpen, setIsFactionInfoOpen] = useState(false);
-
-    const selectedFactionInfo = factions.find((faction => faction.symbol === selectedFaction));
+    const { isLoading, isError, data: factions = [], error } = useQuery({
+        queryKey: ['factionsData'],
+        queryFn: () => getFactions(""),
+    });
 
     const switchAcc = currentTab === "switch";
     const login = currentTab === "login";
     const create = currentTab === "create";
     const activeClass = "text-amber-600";
+    const selectedFactionInfo = factions.find((faction => faction.symbol === selectedFaction));
 
     async function handleSignUp(e) {
         e.preventDefault();
 
-        // if (username.length < 3 || username.length > 10) return;
-
         try {
             const data = await signUp(username, selectedFaction);
-
-            if (!data) throw new Error(errorMessage);
 
             const acc = {token: data.token, name: data.agent.symbol, credits: data.agent.credits, headquarters: data.agent.headquarters};
             setAccount(acc);
     
-            if (oldStorage?.find((item) => item.name === data.agent.symbol)) return onClose(false);
-    
+            if (oldStorage?.find((item) => item.name === data.agent.symbol)) return;
+
             const newStorage = [acc, ...oldStorage];
             localStorage.setItem("agent", JSON.stringify(newStorage));
             setLocal(newStorage);
-            onClose(false);
+
         } catch (err) {
             notify(err.message);
         }
@@ -56,20 +54,19 @@ export default function Login({ onClose }) {
 
     async function handleAuth(e, token) {
         e.preventDefault();
+
         try {
             const data = await getAgent(token, "agent");
-
-            if (!data) throw new Error(errorMessage);
 
             const acc = {token, name: data.symbol, credits: data.credits, headquarters: data.headquarters};
             setAccount(acc);
 
-            if (oldStorage?.find((item) => item.name === data.symbol)) return onClose(false);
-            
+            if (oldStorage?.find((item) => item.name === data.symbol)) return;
+
             const newStorage = [acc, ...oldStorage];
             localStorage.setItem("agent", JSON.stringify(newStorage));
             setLocal(newStorage);
-            onClose(false);
+
         } catch (err) {
             notify(err.message);
         }
@@ -81,19 +78,8 @@ export default function Login({ onClose }) {
         localStorage.setItem("agent", JSON.stringify(removed));
         setLocal(removed);
     }
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const data = await getFactions(token);
-                if (!data) throw new Error(errorMessage);
-                setFactions(data.filter(faction => faction.isRecruiting));
-            } catch (err) {
-                notify(err.message)
-            }
-        }
-        fetchData();
-    }, [token, notify])
+    
+    if (isError) notify(error.message);
 
     return (
     <div className="window w-[30rem]">

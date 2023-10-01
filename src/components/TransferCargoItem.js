@@ -3,10 +3,8 @@
 import { useEffect, useState } from "react";
 import { BiArrowToRight, BiArrowToLeft } from "react-icons/bi"
 import { AiOutlineDown, AiOutlineUp } from "react-icons/ai";
-import { transferCargo } from "@/services/api";
 import { useAccount } from "@/context/AccountContext";
-
-const errorMessage = "I missed the part where that's my problem";
+import { transferCargo } from "@/services/fleet";
 
 export default function TransferCargoItem({ ship, direction = "left", secondShip, setSelectedShip }) {
     const [amount, setAmount] = useState(0);
@@ -47,7 +45,6 @@ export default function TransferCargoItem({ ship, direction = "left", secondShip
     async function handleTransfer() {
         try {
             const data = await transferCargo(account.token, ship.symbol, secondShip.symbol, selected.symbol, amount);
-            if (!data) throw new Error(errorMessage)
             setShips((ships) => ships.map((item) => {
                 if (ship.symbol === item.symbol) return {...item, cargo: data.cargo};
                 if (secondShip.symbol === item.symbol) return setCargoSelected(item);

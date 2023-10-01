@@ -2,10 +2,9 @@ import { GiRefinery } from "react-icons/gi";
 import { BiSolidTrashAlt } from "react-icons/bi";
 import { TiCancel } from "react-icons/ti";
 import { useState } from "react";
-import { jettison, refine } from "@/services/api";
 import { useAccount } from "@/context/AccountContext";
+import { jettison, refine } from "@/services/fleet";
 
-const errorMessage = "I missed the part where that's my problem";
 
 export default function InventoryItem({ ship, item, isRefineAvailable }) {
     const [targetedItem, setTargetedItem] = useState("");
@@ -15,9 +14,6 @@ export default function InventoryItem({ ship, item, isRefineAvailable }) {
     async function handleRefine(resource) {
         try {
             const data = await refine(account.token, ship.symbol, resource);
-
-            if (!data) throw new Error(errorMessage);
-
             setShips((ships) => ships.map((item) => ship.symbol === item.symbol
             ? {...item, fuel: data.fuel}
             : item));
@@ -30,17 +26,13 @@ export default function InventoryItem({ ship, item, isRefineAvailable }) {
         e.preventDefault();
         try {
             const data = await jettison(account.token, ship.symbol, resource, units);
-
-            if (!data) throw new Error('eheh');
-
             setShips((ships) => ships.map((item) => ship.symbol === item.symbol
             ? {...item, cargo: data.cargo}
             : item));
-
             setTargetedItem("");
             setAmount(0);
         } catch(err) {
-            console.error(err);
+            notify(err.message);
         }
     }
 

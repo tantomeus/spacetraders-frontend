@@ -2,9 +2,7 @@
 
 import { useAccount } from "@/context/AccountContext";
 import { convertSeconds } from "@/helpers/helpers";
-import { mineAsteroid } from "@/services/api";
-
-const errorMessage = "I missed the part where that's my problem";
+import { mineAsteroid } from "@/services/fleet";
 
 export default function Mining({ ship, waypoint, remainingSeconds }) {
     const { account, setShips, notify } = useAccount();
@@ -19,9 +17,6 @@ export default function Mining({ ship, waypoint, remainingSeconds }) {
     async function handleMineAsteroid() {
         try {
             const data = await mineAsteroid(account.token, ship.symbol);
-
-            if (!data) throw new Erorr(errorMessage);
-            
             setShips((ships) => ships.map((shipState) => ship.symbol === shipState.symbol ?
             {...shipState, cargo: data.cargo, cooldown: data.cooldown} :
             shipState));

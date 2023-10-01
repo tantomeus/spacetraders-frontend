@@ -1,9 +1,10 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { trade, viewMarketplace } from "@/services/api";
-import { useEffect, useState } from "react";
+import { viewMarketplace } from "@/services/trading";
+import { useState } from "react";
 import { shorten } from "@/helpers/helpers";
+import { useQuery } from "@tanstack/react-query";
 
 import MarketplaceItem from "./MarketplaceItem";
 import SelectShip from "./SelectShip";
@@ -11,15 +12,12 @@ import BackButton from "./BackButton";
 import SkeletonLoader from "./SkeletonLoader";
 import Trade from "./Trade";
 
-const errorMessage = "I missed the part where that's my problem";
 
 export default function Marketplace({ system, waypoint, ships }) {
     const { account, notify } = useAccount();
     const [status, setStatus] = useState(""); // purchase, sell
-    const [goods, setGoods] = useState({});
     const [selectedShip, setSelectedShip] = useState({});
     const [selectedGoods, setSelectedGoods] = useState({});
-    const [isLoading, setIsLoading] = useState(true);
 
     const availableShips = ships.filter(ship => ship.cargo.capacity && ship.nav.status === "DOCKED")
 
@@ -32,21 +30,12 @@ export default function Marketplace({ system, waypoint, ships }) {
         setStatus(type);
     }
 
-    useEffect(() => {
-        async function fetchData() {
-            setIsLoading(true);
-            try {
-                const data = await viewMarketplace(account.token, system, waypoint);
-                if (!data) throw new Error(errorMessage);
-                setGoods(data);
-            } catch (err) {
-                notify(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, [account.token, system, waypoint, notify]);
+    const { isLoading, isError, data: goods, error } = useQuery({
+        queryKey: ['marketData'],
+        queryFn: () => viewMarketplace(account.token, system, waypoint),
+    });
+
+    if (isError) notify(error.message);
 
 
     if (selectedGoods.symbol) return (

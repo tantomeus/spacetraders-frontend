@@ -1,20 +1,28 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { useEffect, useMemo, useState } from "react";
-import { getWaypoints } from "@/services/api";
+import { useMemo } from "react";
+import { getWaypoints } from "@/services/systems";
+import { useQuery } from "@tanstack/react-query";
 
 import PlanetItem from "@/components/PlanetImg";
 import ShipItem from "@/components/ShipItem";
 import Link from "next/link";
 import SkeletonLoader from "@/components/SkeletonLoader";
 
-const errorMessage = "I missed the part where that's my problem";
-
 export default function Fleet() {
     const { account, ships, notify } = useAccount();
-    const [isLoading, setIsLoading] = useState(true);
-    const [systems, setSystems] = useState([]);
+    const { isLoading, isError, data: systems = [], error } = useQuery({
+        queryFn: fetchWaypoints,
+        queryKey: ['waypoints']
+    });
+    
+    if (isError) notify(error.message);
+
+    async function fetchWaypoints() {
+        const data = await Promise.all(uniqueSystems.map((system) => getWaypoints(account.token, system)));
+        return data;
+    }
 
     const uniqueSystems = useMemo(() => {
         return [...new Set(ships
@@ -23,26 +31,11 @@ export default function Fleet() {
     }, [ships]);
 
     const transit = ships.filter(ship => ship.nav.status === "IN_TRANSIT");
+
     const collectionOfShips = uniqueSystems.map(system => ({
         system,
         ships: ships.filter(ship => ship.nav.systemSymbol === system && ship.nav.status !== "IN_TRANSIT")
     }));
-
-    useEffect(() => {
-        async function fetchData() {
-            setIsLoading(true);
-            try {
-                const data = await Promise.all(uniqueSystems.map((system) => getWaypoints(account.token, system)));
-                if (!data) throw new Error(errorMessage);
-                setSystems(data);
-            } catch(err) {
-                notify(err.message);
-            } finally {
-                if (ships.length) setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, [uniqueSystems, account.token, ships.length]);
 
 
     return (

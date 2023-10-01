@@ -1,23 +1,26 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { getWaypoints } from "@/services/api";
-import { useEffect, useState } from "react";
+import { getWaypoints } from "@/services/systems";
+import { useQuery } from "@tanstack/react-query";
 
 import Planets from "@/components/Planets";
 import WaypointItem from "@/components/WaypointItem";
 import SkeletonLoader from "@/components/SkeletonLoader";
 
-const errorMessage = "I missed the part where that's my problem";
-
 export default function System({ params }) {
   const { account, ships, notify } = useAccount();
-  const [isLoading, setIsLoading] = useState(true);
-  const [system, setSystem] = useState([]);
 
   const uniqueWaypoints = [...new Set(ships.map(ship => ship.nav.status === "IN_TRANSIT"
   ? ""
   : ship.nav.waypointSymbol))].filter((item) => item.includes(params.id));
+
+  const { isLoading, isError, data: system = [], error } = useQuery({
+    queryKey: [params.id],
+    queryFn: () => getWaypoints(account.token, params.id),
+  });
+
+  if (isError) notify(error.message);
 
   const collectionOfShips = uniqueWaypoints.map(waypoint => ({
       waypoint: {name: waypoint, type: system.find(planet => planet.symbol === waypoint)?.type},
@@ -45,21 +48,6 @@ export default function System({ params }) {
     },
   ];
 
-  useEffect(() => { 
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const data = await getWaypoints(account.token, params.id);
-        if (!data) throw new Error(errorMessage);
-        setSystem(data);
-      } catch(err) {
-        notify(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
-  }, [params.id, account.token]);
   
   return <section className="space-y-10">
       {isLoading && <div className="rounded-primary p-4 ">

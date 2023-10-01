@@ -1,8 +1,8 @@
 import { useAccount } from "@/context/AccountContext";
-import { installMount } from "@/services/api";
+import { installMount } from "@/services/trading";
 
 export default function Workshop({ ship, setShip }) {
-    const { account, fetchShipsData } = useAccount();
+    const { account, fetchShipsData, notify } = useAccount();
 
     const mounts = ship.cargo.inventory.filter(item => item.symbol.includes("MOUNT")
     && ship.mounts.find(mount => mount.symbol !== item.symbol));
@@ -10,9 +10,13 @@ export default function Workshop({ ship, setShip }) {
     const haveEnoughCredits = account.credits >= 1000;
 
     async function handleInstallMount(mount) {
-        const data = await installMount(account.token, ship.symbol, mount);
-        fetchShipsData(account.token);
-        setShip({});
+        try {
+            await installMount(account.token, ship.symbol, mount);
+            fetchShipsData(account.token);
+            setShip({});
+        } catch (err) {
+            notify(err.message);
+        }
     }
 
     if (!mounts.length) return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { dockOrOrbit } from "@/services/api";
+import { dockOrOrbit } from "@/services/fleet";
 import { FaHelicopterSymbol } from "react-icons/fa6"
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -16,13 +16,15 @@ import TransferCargo from "./TransferCargo";
 import Dropdown from "./Dropdown";
 import Trade from "./Trade";
 
-const errorMessage = "I missed the part where that's my problem";
 
 export default function ShipItem({ ship, system }) {
     const remainingTravel = useMemo(() => {
         return Math.trunc((new Date(ship.nav.route.arrival) - new Date()) / 1000);
     }, [ship.nav.route.arrival]);
-    const remainingMine = ship.cooldown.remainingSeconds;
+
+    const remainingMine = useMemo(() => {
+        return ship.cooldown.remainingSeconds;
+    }, [ship.cooldown.remainingSeconds]);
 
     const [secondsTravel, setSecondsTravel] = useState(remainingTravel);
     const [secondsMine, setSecondsMine] = useState(remainingMine);
@@ -53,7 +55,6 @@ export default function ShipItem({ ship, system }) {
     async function handleDockOrOrbit() {
         try {
             const data = await dockOrOrbit(account.token, ship.symbol, status === "DOCKED" ? "orbit" : "dock");
-            if (!data) throw new Error(errorMessage);
             setShips((ships) => ships.map(item => item.symbol == ship.symbol ? {
                 ...item, nav: data.nav
             } : item));
@@ -63,10 +64,15 @@ export default function ShipItem({ ship, system }) {
     }
 
     useEffect(() => {
+        setSecondsMine(remainingMine);
+    }, [remainingMine]);
+
+    useEffect(() => {
         function close(e) {
             if(e.target.closest(".relative") === ref.current) return;
             setIsDropDownOpen(false);
         }
+        
         document.body.addEventListener("mousedown", close);
 
         return function() {

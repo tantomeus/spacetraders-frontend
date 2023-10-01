@@ -8,7 +8,6 @@ const pages = ["Fleet", "Systems", "Contracts", "Guide"];
 export default function Nav() {
     const path = usePathname();
 
-
     return (
     <div className="flex items-center gap-14">
         <Link href="/">

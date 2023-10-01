@@ -13,7 +13,7 @@ import Nav from "./Nav";
 export default function Header() {
     const { account, setAccount } = useAccount();
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
-    const [openedWindow, setOpenedWindow] = useState(""); // accountInfo, login
+    const [openedWindow, setOpenedWindow] = useState(""); // accountInfo
 
     const ref = useRef();
 

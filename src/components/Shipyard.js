@@ -1,9 +1,10 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { getShipMarket } from "@/services/api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { shorten } from "@/helpers/helpers";
+import { useQuery } from "@tanstack/react-query";
+import { getShipMarket } from "@/services/trading";
 
 import ShipyardItem from "./ShipyardItem";
 import SelectShip from "./SelectShip";
@@ -11,14 +12,10 @@ import Workshop from "./Workshop";
 import BackButton from "./BackButton";
 import SkeletonLoader from "./SkeletonLoader";
 
-const errorMessage = "I missed the part where that's my problem";
-
 export default function Shipyard({ system, waypoint }) {
     const { ships, account, notify } = useAccount();
-    const [shipsToBuy, setShipsToBuy] = useState({});
     const [selectedShip, setSelectedShip] = useState({});
     const [activeTab, setActiveTab] = useState("market");
-    const [isLoading, setIsLoading] = useState(true);
 
     const tabs = ["market", "workshop"];
     const styles = "translate-y-1/3 hover:translate-y-0 bg-stone-900";
@@ -30,21 +27,13 @@ export default function Shipyard({ system, waypoint }) {
         setSelectedShip({});
     }
 
-    useEffect(() => {
-        async function fetchData() {
-            setIsLoading(true);
-            try {
-                const data = await getShipMarket(account.token, system, waypoint);
-                if (!data) throw new Error(errorMessage);
-                setShipsToBuy(data);
-            } catch(err) {
-                notify(err.message)
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, [account.token, system, waypoint]);
+    const { isLoading, isError, data: shipsToBuy = [], error } = useQuery({
+        queryKey: ['shipyardData'],
+        queryFn: () => getShipMarket(account.token, system, waypoint),
+    });
+
+    if (isError) notify(error.message);
+
 
     return (
     <div className="window window-divide w-[60rem]">

@@ -1,18 +1,22 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { negotiateContract } from "@/services/api";
+import { negotiateContract } from "@/services/contracts";
 
 import ContractItem from "@/components/ContractItem";
 
 export default function Contracts() {
-    const { account, ships, contracts, fetchContract } = useAccount();
+    const { account, ships, contracts, fetchContract, notify } = useAccount();
 
     const shipOnHeadquarter = ships.find(ship => ship.nav.waypointSymbol === account.headquarters && ship.nav.status === "DOCKED");
 
-    function handleGetContracts() {
+    async function handleGetContracts() {
+      try {
         negotiateContract(account.token, shipOnHeadquarter.symbol);
         fetchContract(account.token);
+      } catch(err) {
+        notify(err.message);
+      }
     }
 
     return <section>
