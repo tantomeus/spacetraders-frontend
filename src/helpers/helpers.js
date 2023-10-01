@@ -15,3 +15,8 @@ export function shorten(number) {
 
     return shorten(number / 1000) + "k";
 }
+
+export function formatDate(date) {
+    const formated =  date.split("T")[0].split("-");
+    return `${formated[2]}.${formated[1]}.${formated[0]}`;
+}

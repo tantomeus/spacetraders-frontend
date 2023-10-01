@@ -1,22 +1,15 @@
 "use client";
 
 import { useAccount } from "@/context/AccountContext";
-import { acceptContract } from "@/services/api";
-
-const errorMessage = "I missed the part where that's my problem";
+import { formatDate } from "@/helpers/helpers";
+import { acceptContract } from "@/services/contracts";
 
 export default function ContractItem({ contract, token }) {
     const { setAccount, notify, fetchContracts } = useAccount();
 
-    function formatDate(date) {
-        const formated =  date.split("T")[0].split("-");
-        return `${formated[2]}.${formated[1]}.${formated[0]}`;
-    }
-
     async function handleAccept(type) {
         try {
             const data = await acceptContract(token, contract.id, type);
-            if (!data) throw new Error(errorMessage);
             setAccount((account) => ({...account, credits: data.agent.credits}));
             fetchContracts(token);
         } catch(err) {
