@@ -35,10 +35,6 @@
       @apply divide-y divide-stone-500;
     }
 
-    .input {
-      @apply bg-transparent border-stone-700 border rounded-primary px-3;
-    }
-
     .flex-between {
       @apply flex justify-between items-center;
     }
@@ -48,7 +44,7 @@
     }
 
     .h-overflow {
-      @apply h-[60vh] overflow-y-auto overflow-x-hidden;
+      @apply max-h-[60vh] overflow-y-auto overflow-x-hidden;
     }
 
     .white-border {
@@ -69,6 +65,14 @@
 
     .rounded-primary {
       @apply rounded-md;
+    }
+
+    .input {
+      @apply bg-transparent border-stone-700 border rounded-primary px-3 hover:white-border outline-none focus:border-amber-600 transition-primary;
+    }
+
+    .floating-label {
+      @apply text-sm text-stone-600 absolute -z-10 top-[50%] -translate-y-1/2 left-3 transition duration-200 ease-out peer-hover:text-stone-50 peer-focus:text-amber-600 peer-focus:scale-[80%] origin-top-left bg-stone-900 px-1 peer-focus:z-10;
     }
 }
 

@@ -29,7 +29,12 @@ export default function Login() {
     const switchAcc = currentTab === "switch";
     const login = currentTab === "login";
     const create = currentTab === "create";
-    const activeClass = "text-amber-600";
+
+    const activeClass = "text-amber-600 hover:bg-amber-950";
+    const moving = login ? "translate-x-full" : create ? "translate-x-[200%]" : "";
+    const movingWindow = login ? "-translate-x-full" : create ? "-translate-x-[200%]" : "";
+    const height = login ? "max-h-[10.5rem]" : create ? "max-h-[15.5rem]" : "";
+
     const selectedFactionInfo = factions.find((faction => faction.symbol === selectedFaction));
 
     async function handleSignUp(e) {
@@ -82,84 +87,85 @@ export default function Login() {
     if (isError) notify(error.message);
 
     return (
-    <div className="window w-[30rem]">
-        <div className="flex">
+    <div style={{boxShadow: "0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14), 0 9px 46px 8px rgba(0,0,0,.12)"}}
+    className="window w-[30rem] overflow-hidden">
+        <div className="grid grid-cols-3 relative">
             <button
             onClick={() => setCurrentTab("switch")}
-            className={`relative py-4 grow uppercase ${switchAcc ? activeClass : ""}`}>
+            className={`py-4 grow uppercase transition-primary ${switchAcc ? activeClass : "item-hover-color"}`}>
                 Switch
-                {switchAcc && <span className="absolute left-0 bottom-0 bg-amber-600 h-0.5 w-full"></span>}
             </button>
 
             <button
             onClick={() => setCurrentTab("login")}
-            className={`relative py-4 grow uppercase ${login ? activeClass : ""}`}>
+            className={`py-4 grow uppercase transition-primary ${login ? activeClass : "item-hover-color"}`}>
                 Login
-                {login && <span className="absolute left-0 bottom-0 bg-amber-600 h-0.5 w-full"></span>}
             </button>
 
             <button
             onClick={() => setCurrentTab("create")}
-            className={`relative py-4 grow uppercase ${create ? activeClass : ""}`}>
+            className={`py-4 grow uppercase transition-primary ${create ? activeClass : "item-hover-color"}`}>
                 Create
-                {create && <span className="absolute left-0 bottom-0 bg-amber-600 h-0.5 w-full"></span>}
             </button>
+            {<span className={`absolute left-0 bottom-0 bg-amber-600 h-0.5 w-40 ${moving} transition-primary`}></span>}
         </div>
 
-        {switchAcc && <ul className="h-overflow">
-            {local.length
-            ? local.map((agent) =>
-            <li
-            className="cursor-pointer p-5 rounded-primary item-hover-color flex-between"
-            key={agent.token} onClick={(e) => handleAuth(e, agent.token)}>
-                <span>{agent.name}</span>
+        <div className={`grid grid-cols-[30rem_30rem_30rem] ${height} transition-primary`}>
+            <ul className={`h-overflow ${movingWindow} transition-primary`}>
+                {local.length
+                ? local.map((agent) =>
+                <li className="cursor-pointer p-5 rounded-primary item-hover-color flex-between"
+                key={agent.token} onClick={(e) => handleAuth(e, agent.token)}>
+                    <span>{agent.name}</span>
 
-                <button onClick={(e) => handleRemove(e, agent.token)}>
-                    <FaTrashAlt className="hover:fill-amber-600 h-6 w-6"/>
-                </button>
-            </li>)
-            : <li className="p-5 flex justify-center items-center">NO ACCOUNTS</li>}
-        </ul>}
+                    <button onClick={(e) => handleRemove(e, agent.token)}>
+                        <FaTrashAlt className="hover:fill-amber-600 h-6 w-6"/>
+                    </button>
+                </li>)
+                : <li className="p-5 flex justify-center items-center translate-y-full">NO ACCOUNTS</li>}
+            </ul>
 
-        {login &&
-        <form onSubmit={(e) => handleAuth(e, token)} className="flex flex-col gap-8 p-5">
-            <input value={token}
-            onChange={(e) => setToken(e.target.value)}
-            placeholder="Token"
-            className="input py-3"/>
+            <form className={`flex flex-col justify-start gap-8 p-5 ${movingWindow} transition-primary`}
+            onSubmit={(e) => handleAuth(e, token)}>
+                <div className="relative">
+                    <input value={token} onChange={(e) => setToken(e.target.value)}
+                    className="input py-3 w-full peer"/>
+                    <label className={`floating-label peer-focus:translate-y-[-170%] ${token ? "translate-y-[-170%] scale-[80%] text-stone-50 z-10" : ""}`}>Token</label>
+                </div>
+                <button className="btn btn-color hover:btn-color-reversed text-xl">Sign In</button>
+            </form>
 
-            <button className="btn btn-color hover:btn-color-reversed text-xl">Set username</button>
-        </form>}
+            <form onSubmit={handleSignUp} className={`flex flex-col justify-start gap-8 p-5 ${movingWindow} transition-primary`}>
+                <div className="relative">
+                    <input value={username} onChange={(e) => setUsername(e.target.value)}
+                    className="input py-3 w-full peer"/>
+                    <label className={`floating-label peer-focus:translate-y-[-170%] ${username ? "translate-y-[-170%] scale-[80%] text-stone-50 z-10" : ""}`}>Username</label>
+                </div>
 
-        {create &&
-        <form onSubmit={handleSignUp} className="flex flex-col gap-8 p-5">
-            <input value={username} onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
-            className="input py-3 w-full"/>
+                <div className="flex justify-between gap-2">
+                    <select
+                    className="input py-3 grow"
+                    onChange={(e) => setSelectedFaction(e.target.value)}
+                    value={selectedFaction}>
+                        {factions.map(faction =>
+                        <option
+                        className="bg-stone-900"
+                        value={faction.symbol}
+                        key={faction.symbol}>
+                            {faction.name}
+                        </option>)}
+                    </select>
 
-            <div className="flex justify-between gap-2">
-                <select
-                className="input py-3 grow"
-                onChange={(e) => setSelectedFaction(e.target.value)}
-                value={selectedFaction}>
-                    {factions.map(faction =>
-                    <option
-                    className="bg-stone-900"
-                    value={faction.symbol}
-                    key={faction.symbol}>
-                        {faction.name}
-                    </option>)}
-                </select>
-
-                <button
-                onClick={() => setIsFactionInfoOpen(true)}
-                type="button">
-                    <AiOutlineInfoCircle className="icon-size-primary rounded-full hover:fill-amber-600"/>
-                </button>
-            </div>
-            
-            <button className="btn btn-color hover:btn-color-reversed text-xl">Set username</button>
-        </form>}
+                    <button
+                    onClick={() => setIsFactionInfoOpen(true)}
+                    type="button">
+                        <AiOutlineInfoCircle className="icon-size-primary rounded-full hover:fill-amber-600"/>
+                    </button>
+                </div>
+                
+                <button className="btn btn-color hover:btn-color-reversed text-xl">Sign Up</button>
+            </form>
+        </div>
 
         {isFactionInfoOpen && createPortal(
         <FactionInfo

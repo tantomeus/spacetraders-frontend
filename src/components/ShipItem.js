@@ -39,7 +39,7 @@ export default function ShipItem({ ship, system }) {
     const status = ship.nav.status;
     const shipHasMineModule = ship.modules.find(module => module.symbol.includes("MINERAL"));
     const canCarryCargo = ship.cargo.capacity > 0;
-    const contract = contracts?.[0]
+    const contract = contracts?.[0] || {};
     const hasContractCargo =  ship.cargo.inventory?.find(item => item.symbol === contract.terms.deliver[0].tradeSymbol);
     const isContractTermsComplied = contract.accepted && hasContractCargo && ship.nav.waypointSymbol === contract.terms.deliver[0].destinationSymbol;
 

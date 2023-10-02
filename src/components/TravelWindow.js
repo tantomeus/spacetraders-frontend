@@ -116,9 +116,12 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
                     return <form key={module}
                     className="pl-6 pr-8 py-3 grid grid-cols-[2fr_1fr_2fr_0.5fr_5.4rem] items-center w-[50%]"
                     onSubmit={(e) => handleTravel(e, account.token, ship.symbol, controlledWaypoint, module)}>
-                        <input placeholder="WAYPOINT"
-                        onChange={(e) => setControlledWaypoint(e.target.value)} value={controlledWaypoint}
-                        className="input h-full"/>
+                        <div className="relative">
+                            <input onChange={(e) => setControlledWaypoint(e.target.value.toUpperCase())} value={controlledWaypoint}
+                            className="input py-3 w-full peer"/>
+                            <label className={`floating-label peer-focus:translate-y-[-150%] ${controlledWaypoint
+                                ? "translate-y-[-150%] scale-[80%] text-stone-50 z-10" : ""}`}>Waypoint</label>
+                        </div>
 
                         <span></span>
                         <span></span>
@@ -135,7 +138,7 @@ export default function TravelWindow({ waypoints, ship, onNavigation }) {
                 })}
             </li>
 
-            {waypoints.map((planet, i, arr) => {
+            {waypoints?.map((planet, i, arr) => {
 
             const isCurrentWaypount = planet.symbol === departureSymbol;
             const canFly = !isCurrentWaypount && !isShipDocked;

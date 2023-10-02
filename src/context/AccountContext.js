@@ -10,8 +10,7 @@ import Login from "@/components/Login";
 const AccountContext = createContext();
 
 export default function AccountProvider({ children }) {
-    const [account, setAccount] = useState({
-    });
+    const [account, setAccount] = useState({});
     const [ships, setShips] = useState([]);
     const [contracts, setContracts] = useState([]); 
 
