@@ -14,7 +14,7 @@ export default function Nav() {
             <Image src="/logo.svg" height={68}  width={68} alt="logo" className="scale-90"/>
         </Link>
 
-        <nav className="flex gap-2">
+        <nav className="absolute left-0 flex flex-col gap-2 top-20 bg-stone-900 lg:flex-row lg:static">
             {pages.map(page => 
             <Link
             key={page}
