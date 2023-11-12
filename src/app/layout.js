@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
         <QueryClientProvider client={queryClient}>
           <AccountProvider>
               <Header/>
-              <main className="max-w-7xl mx-auto min-h-[80vh]">
+              <main className="max-w-7xl mx-auto min-h-[80vh] px-8">
                 {children}
               </main>
               <Footer/>
