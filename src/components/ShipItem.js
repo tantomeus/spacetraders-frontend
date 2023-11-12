@@ -114,19 +114,19 @@ export default function ShipItem({ ship, system }) {
 
     
     if (status === "IN_TRANSIT") return (
-    <li className="flex items-center gap-6 item-hover-color p-4 rounded-primary">
+    <li className="flex items-center gap-6 p-4 item-hover-color rounded-primary">
 
         <ShipImg status={status} ship={ship}/>
 
         <div className="space-y-4">
-            <div className="flex gap-2 items-center text-md">
+            <div className="flex items-center gap-2 text-md">
                 <h3>{ship.symbol}</h3>
                 &bull;
                 <span>{ship.frame.name.replace("Frame ", "")}</span>
             </div>
 
             {canCarryCargo && <button onClick={() => handleOpenWindow("inventory")}
-            className="text-xs px-2 py-1 rounded-full uppercase bg-stone-600 hover:bg-stone-500">
+            className="px-2 py-1 text-xs uppercase rounded-full bg-stone-600 hover:bg-stone-500">
                 inventory
             </button>}
         </div>
@@ -147,28 +147,28 @@ export default function ShipItem({ ship, system }) {
 
 
     return (
-    <li className="flex items-center gap-6 item-hover-color p-4 rounded-primary">
+    <li className="flex flex-col flex-wrap items-center gap-6 p-4 xs:flex-row item-hover-color rounded-primary">
 
-        <div className="relative flex justify-center items-center h-20 w-20">
+        <div className="relative flex items-center justify-center w-20 h-20">
             <FaHelicopterSymbol
-            className="absolute p-2 rounded-full h-full w-full bg-stone-400 fill-amber-600"/>
+            className="absolute w-full h-full p-2 rounded-full bg-stone-400 fill-amber-600"/>
             <ShipImg onClick={handleDockOrOrbit} status={status} ship={ship}/>
         </div>
 
-        <div className="space-y-4">
-            <div className="flex gap-2 items-center text-md">
+        <div className="space-y-4 text-center xs:text-left xs:mr-auto">
+            <div className="flex items-center gap-2 text-md">
                 <h3>{ship.symbol}</h3>
                 &bull;
                 <span>{ship.frame.name.replace("Frame ", "")}</span>
             </div>
 
             {canCarryCargo && <button onClick={() => handleOpenWindow("inventory")}
-            className="text-xs px-2 py-1 rounded-full uppercase bg-stone-600 hover:bg-stone-500">
+            className="px-2 py-1 text-xs uppercase rounded-full bg-stone-600 hover:bg-stone-500">
                 inventory
             </button>}
         </div>
 
-        <div ref={ref} className="relative ml-auto">
+        <div ref={ref} className="relative">
             <button onClick={handleToggleDropdown}
             className="btn btn-color hover:btn-color-reversed text-xs/[1rem]">
                 COMMAND
