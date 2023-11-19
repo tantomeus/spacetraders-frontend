@@ -14,7 +14,7 @@ import Nav from "./Nav";
 export default function Header() {
     const { account, setAccount } = useAccount();
     const [isDropDownOpen, setIsDropDownOpen] = useState(false);
-    const [isNavOpen, setIsNavOpen] = useState(true);
+    const [isNavOpen, setIsNavOpen] = useState(false);
     const [openedWindow, setOpenedWindow] = useState(""); // accountInfo
 
     const ref = useRef();
@@ -47,20 +47,20 @@ export default function Header() {
     }, []);
 
     return (
-    <header className="px-10 py-2 mb-5 lg:py-0 bg-stone-900 flex-between text-stone-100">
+    <header className="px-5 py-2 mb-5 xs:px-10 lg:py-0 bg-stone-900 flex-between text-stone-100">
         <Nav className="hidden lg:flex"/>
         <Nav className={`lg:hidden fixed flex-col top-0 bottom-0 left-0 z-[1000] bg-stone-900 gap-7 p-4 lg:p-0 ${isNavOpen ? "open-nav flex " : "hidden close-nav"}`}
         onClose={() => setIsNavOpen(false)}/>
-        <button className="lg:hidden" onClick={() => setIsNavOpen((nav) => !nav)}><FaHamburger className="w-8 h-8"/></button>
+        <button className="lg:hidden" onClick={() => setIsNavOpen((nav) => !nav)}><FaHamburger className="w-6 h-6 sm:w-8 sm:h-8"/></button>
         {isNavOpen && <Overlay onClose={setIsNavOpen}/>}
 
         <div className="flex items-center space-x-4">
-            <span className="px-4 py-2 text-lg credits rounded-3xl">{shorten(account.credits)} credits</span>
+            <span className="px-4 py-2 text-xs xs:text-base sm:text-lg credits rounded-3xl">{shorten(account.credits)} credits</span>
             <div ref={ref} className="relative">
                 <button
                 data-testid="account"
                 onClick={handleOpenDropdown}
-                className="text-xl btn btn-color hover:btn-color-reversed">{account.name || "..."}</button>
+                className="text-xs xs:text-base sm:text-xl btn btn-color hover:btn-color-reversed">{account.name || "..."}</button>
 
                 {isDropDownOpen &&
                 <Dropdown options={[
