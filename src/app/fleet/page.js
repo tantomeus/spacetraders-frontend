@@ -39,7 +39,7 @@ export default function Fleet() {
 
 
     return (
-    <section className="w-[60%] mx-auto">
+    <section className="mx-auto">
         <ul className="space-y-5">
             {isLoading && ["", "", ""].map((_, i) => <SkeletonLoader key={i}/>)}
 
@@ -60,14 +60,14 @@ export default function Fleet() {
 
                 return (
                 <li key={system} className="bg-stone-900 rounded-primary">
-                    <div className="min-h-[4.28rem] flex-between p-4">
-                        <div className="flex items-center gap-4">
+                    <div className="min-h-[4.28rem] flex-between p-4 flex-wrap flex-col xs:flex-row">
+                        <div className="flex flex-col items-center xs:gap-4 xs:flex-row">
                             <PlanetItem/>
                             <h2 className="text-2xl font-bold uppercase">{system}</h2>
                         </div>
 
                         <Link href={`/systems/${system}`}
-                        className="btn btn-color hover:btn-color-reversed text-xl ml-auto">
+                        className="mt-4 text-xl btn btn-color hover:btn-color-reversed xs:mt-0">
                             View
                         </Link>
                     </div>
