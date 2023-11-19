@@ -7,26 +7,26 @@ export default function SystemItem({ system }) {
 
     return (
     <li className="bg-stone-900 rounded-primary">
-        <div className="flex-between gap-8 p-4">
+        <div className="flex-wrap gap-8 p-4 flex-between">
             <div className="flex items-center h-16 gap-4">
                 <PlanetImg type={system.type} origin="left"/>
                 <h2 className="text-3xl">{system.symbol}</h2>
             </div>
 
             <Link href={`/systems/${system.symbol}`}
-            className="btn btn-color hover:btn-color-reversed text-xl ml-auto">
+            className="ml-auto text-xl btn btn-color hover:btn-color-reversed">
                 View
             </Link>
         </div>
         
-        <div className="flex items-center uppercase text-xl">
-            <hr className="grow opacity-50"/>
+        <div className="flex items-center text-xl uppercase">
+            <hr className="opacity-50 grow"/>
             {system.factions?.length ? <FactionImg faction={system.factions[0]?.symbol}/> : ""}
-            <hr className="grow opacity-50"/>
+            <hr className="opacity-50 grow"/>
         </div>
 
         {system.waypoints?.length
         ? <Planets waypoints={system.waypoints}/>
-        : <p className="text-center py-4 text-xl uppercase">it{"'"}s empty here...</p>}
+        : <p className="py-4 text-xl text-center uppercase">it{"'"}s empty here...</p>}
     </li>)
 }
