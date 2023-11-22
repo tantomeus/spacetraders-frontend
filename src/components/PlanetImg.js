@@ -18,7 +18,7 @@ export default function PlanetImg({ type }) {
                     size: 6.25,
                     translate: "translate(110%, 110%)"
                 };
-            case "ASTEROID_FIELD":
+            case "ASTEROID":
                 return {
                     bg: "bg-[url('/assets/asteroids/asteroid-0.png')]",
                     animation: "",
